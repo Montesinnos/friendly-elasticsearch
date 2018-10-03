@@ -1,0 +1,47 @@
+version: '3.3'
+services:
+  # Start of Elasticsearch
+  elasticsearchtest:
+    build: ./docker/elasticsearch
+    container_name: elasticsearchtest
+    environment:
+    - cluster.name=next
+    - bootstrap.memory_lock=true
+    - "ES_JAVA_OPTS=-Xms1g -Xmx1g"
+    - "discovery.zen.ping.unicast.hosts=elasticsearchtest,elasticsearch2test"
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    volumes:
+    - esdata1test:/usr/share/elasticsearch/data
+    ports:
+    - 59200:9200
+    - 59300:9300
+    networks:
+    - esnettest
+  elasticsearch2test:
+    build: ./docker/elasticsearch
+    container_name: elasticsearch2test
+    environment:
+    - cluster.name=next
+    - bootstrap.memory_lock=true
+    - "ES_JAVA_OPTS=-Xms1g -Xmx1g"
+    - "discovery.zen.ping.unicast.hosts=elasticsearchtest,elasticsearch2test"
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    volumes:
+    - esdata2test:/usr/share/elasticsearch/data
+    networks:
+    - esnettest
+  #End of Elasticsearch
+
+volumes:
+  esdata1test:
+    driver: local
+  esdata2test:
+    driver: local
+networks:
+  esnettest:

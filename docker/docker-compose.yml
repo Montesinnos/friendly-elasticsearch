@@ -1,0 +1,81 @@
+version: '3.3'
+services:
+  # Start of Elasticsearch
+  elasticsearch:
+    restart: always
+    build: ./docker/elasticsearch
+    container_name: elasticsearch
+    environment:
+    - cluster.name=next
+    - bootstrap.memory_lock=true
+    - "ES_JAVA_OPTS=-Xms2g -Xmx2g"
+    - "discovery.zen.ping.unicast.hosts=elasticsearch,elasticsearch2,elasticsearch3"
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    volumes:
+    - esdata1:/usr/share/elasticsearch/data
+    ports:
+    - 9200:9200
+    networks:
+    - esnet
+  elasticsearch2:
+    restart: always
+    build: ./docker/elasticsearch
+    container_name: elasticsearch2
+    environment:
+    - cluster.name=next
+    - bootstrap.memory_lock=true
+    - "ES_JAVA_OPTS=-Xms2g -Xmx2g"
+    - "discovery.zen.ping.unicast.hosts=elasticsearch,elasticsearch2,elasticsearch3"
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    volumes:
+    - esdata2:/usr/share/elasticsearch/data
+    networks:
+    - esnet
+  elasticsearch3:
+    restart: always
+    build: ./docker/elasticsearch
+    container_name: elasticsearch3
+    environment:
+    - cluster.name=next
+    - bootstrap.memory_lock=true
+    - "ES_JAVA_OPTS=-Xms2g -Xmx2g"
+    - "discovery.zen.ping.unicast.hosts=elasticsearch,elasticsearch2,elasticsearch3"
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    volumes:
+    - esdata3:/usr/share/elasticsearch/data
+    networks:
+    - esnet
+  #End of Elasticsearch
+
+
+  # Start of Kibana
+  kibana:
+    restart: always
+    build: ./docker/kibana
+    environment:
+      ELASTICSEARCH_URL: http://elasticsearch:9200
+    ports:
+    - 5601:5601
+    networks:
+    - esnet
+  # End of Kibana
+
+
+volumes:
+  esdata1:
+    driver: local
+  esdata2:
+    driver: local
+  esdata3:
+    driver: local
+networks:
+  esnet:

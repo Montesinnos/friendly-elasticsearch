@@ -1,0 +1,19 @@
+network.bind_host: "0.0.0.0"
+network.host: "0.0.0.0"
+discovery.zen.minimum_master_nodes: 1
+node.master: true
+
+
+# Start of Xpack
+# Disabling monitoring since it needs more license.
+# Also reducing the history to not clog the clusters with multiple indices
+xpack.monitoring.history.duration: 1d
+xpack.security.enabled: false
+# End of Xpack
+
+
+# Start of CORSSSSSSS
+# Security risk, don't do this in production
+# http.cors.enabled: true
+# http.cors.allow-origin: "*"
+# End of CORS
