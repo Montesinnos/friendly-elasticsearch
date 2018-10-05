@@ -1,0 +1,140 @@
+plugins {
+    id 'maven'
+    id 'maven-publish'
+    id 'java'
+    id 'idea'
+    id 'org.unbroken-dome.test-sets' version '1.5.1'
+    id 'signing'
+    id 'java-library'
+}
+
+group 'com.montesinnos.friendly'
+version '0.1.0-SNAPSHOT'
+
+sourceCompatibility = 1.8
+
+repositories {
+    mavenCentral()
+}
+
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            from components.java
+            // more goes in here
+        }
+    }
+    repositories {
+        mavenLocal()
+    }
+}
+
+dependencies {
+    // https://mvnrepository.com/artifact/org.apache.logging.log4j/log4j-core
+    compile group: 'org.apache.logging.log4j', name: 'log4j-core', version: '2.11.1'
+    // https://mvnrepository.com/artifact/org.apache.logging.log4j/log4j-api
+    compile group: 'org.apache.logging.log4j', name: 'log4j-api', version: '2.11.1'
+
+    // https://mvnrepository.com/artifact/org.elasticsearch.client/elasticsearch-rest-high-level-client
+    compile group: 'org.elasticsearch.client', name: 'elasticsearch-rest-high-level-client', version: '6.4.2'
+
+    // https://mvnrepository.com/artifact/com.google.guava/guava
+    compile group: 'com.google.guava', name: 'guava', version: '26.0-jre'
+
+    // https://mvnrepository.com/artifact/com.fasterxml.jackson.core/jackson-core
+    compile group: 'com.fasterxml.jackson.core', name: 'jackson-core', version: '2.9.7'
+    // https://mvnrepository.com/artifact/com.fasterxml.jackson.core/jackson-databind
+    compile group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.9.7'
+
+    testCompile 'org.junit.jupiter:junit-jupiter-api:5.3.1'
+    testCompile 'org.junit.jupiter:junit-jupiter-params:5.3.1'
+    testRuntime 'org.junit.jupiter:junit-jupiter-engine:5.3.1'
+}
+
+test {
+    useJUnitPlatform()
+    testLogging {
+        events "passed", "skipped", "failed"
+    }
+}
+
+testSets {
+    integrationTest
+}
+
+
+task javadocJar(type: Jar) {
+    classifier = 'javadoc'
+    from javadoc
+}
+
+task sourcesJar(type: Jar) {
+    classifier = 'sources'
+    from sourceSets.main.allSource
+}
+
+artifacts {
+    archives javadocJar, sourcesJar
+}
+
+signing {
+    sign configurations.archives
+}
+
+uploadArchives {
+    repositories {
+        mavenDeployer {
+            beforeDeployment { MavenDeployment deployment -> signing.signPom(deployment) }
+
+            repository(url: "https://oss.sonatype.org/service/local/staging/deploy/maven2/") {
+                authentication(userName: ossrhUsername, password: ossrhPassword)
+            }
+
+            snapshotRepository(url: "https://oss.sonatype.org/content/repositories/snapshots/") {
+                authentication(userName: ossrhUsername, password: ossrhPassword)
+            }
+
+            pom.project {
+                name 'Friendly Elasticsearch for Lazy Developers'
+                packaging 'jar'
+                // optionally artifactId can be defined here
+                description 'Do you want to get stuff done without putting effort?'
+                url 'https://github.com/Montesinnos/friendly-elasticsearch'
+
+                developers {
+                    developer {
+                        id 'montesinnos'
+                        name 'Montesinnos'
+                        email 'email@montesinnos.com'
+                    }
+                }
+            }
+        }
+    }
+}
+//
+//task sourceJar(type: Jar) {
+//    classifier "sources"
+//    from sourceSets.main.allJava
+//}
+//
+//task javadocJar(type: Jar, dependsOn: javadoc){
+//    classifier "javadoc"
+//    from javadoc.destinationDir
+//}
+//
+//artifacts {
+//    archives jar
+//    archives sourceJar
+//    archives javadocJar
+//}
+//
+//signing {
+//    sign configurations.archives
+//}
+//
+//javadoc {
+//    if(JavaVersion.current().isJava9Compatible()) {
+//        options.addBooleanOption('html4', true)
+//    }
+//}

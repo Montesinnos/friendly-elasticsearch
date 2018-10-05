@@ -1,0 +1,374 @@
+{
+  "pokemon": {
+    "properties": {
+      "animationTime": {
+        "type": "float"
+      },
+      "buddySize": {
+        "properties": {
+          "id": {
+            "type": "keyword"
+          },
+          "name": {
+            "type": "keyword"
+          }
+        }
+      },
+      "camera": {
+        "properties": {
+          "cylinderGround": {
+            "type": "float"
+          },
+          "cylinderRadius": {
+            "type": "float"
+          },
+          "diskRadius": {
+            "type": "float"
+          },
+          "shoulderModeScale": {
+            "type": "float"
+          }
+        }
+      },
+      "cinematicMoves": {
+        "properties": {
+          "id": {
+            "type": "keyword"
+          },
+          "name": {
+            "type": "text",
+            "fields": {
+              "keyword": {
+                "type": "keyword",
+                "ignore_above": 256
+              }
+            }
+          }
+        }
+      },
+      "dex": {
+        "type": "long"
+      },
+      "encounter": {
+        "properties": {
+          "attackProbability": {
+            "type": "float"
+          },
+          "attackTimer": {
+            "type": "long"
+          },
+          "baseCaptureRate": {
+            "type": "float"
+          },
+          "baseFleeRate": {
+            "type": "float"
+          },
+          "cameraDistance": {
+            "type": "float"
+          },
+          "collisionRadius": {
+            "type": "float"
+          },
+          "dodgeDistance": {
+            "type": "long"
+          },
+          "dodgeProbability": {
+            "type": "float"
+          },
+          "gender": {
+            "properties": {
+              "femalePercent": {
+                "type": "float"
+              },
+              "malePercent": {
+                "type": "float"
+              }
+            }
+          },
+          "jumpTime": {
+            "type": "float"
+          },
+          "maxPokemonActionFrequency": {
+            "type": "float"
+          },
+          "minPokemonActionFrequency": {
+            "type": "float"
+          },
+          "movementType": {
+            "properties": {
+              "id": {
+                "type": "keyword"
+              },
+              "name": {
+                "type": "text",
+                "fields": {
+                  "keyword": {
+                    "type": "keyword",
+                    "ignore_above": 256
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "evolution": {
+        "properties": {
+          "costToEvolve": {
+            "properties": {
+              "candyCost": {
+                "type": "long"
+              },
+              "evolutionItem": {
+                "properties": {
+                  "id": {
+                    "type": "keyword"
+                  },
+                  "name": {
+                    "type": "text",
+                    "fields": {
+                      "keyword": {
+                        "type": "keyword",
+                        "ignore_above": 256
+                      }
+                    }
+                  }
+                }
+              },
+              "kmBuddyDistance": {
+                "type": "long"
+              }
+            }
+          },
+          "futureBranches": {
+            "properties": {
+              "costToEvolve": {
+                "properties": {
+                  "candyCost": {
+                    "type": "long"
+                  },
+                  "evolutionItem": {
+                    "properties": {
+                      "id": {
+                        "type": "keyword"
+                      },
+                      "name": {
+                        "type": "text",
+                        "fields": {
+                          "keyword": {
+                            "type": "keyword",
+                            "ignore_above": 256
+                          }
+                        }
+                      }
+                    }
+                  },
+                  "kmBuddyDistance": {
+                    "type": "long"
+                  }
+                }
+              },
+              "futureBranches": {
+                "properties": {
+                  "costToEvolve": {
+                    "properties": {
+                      "candyCost": {
+                        "type": "long"
+                      },
+                      "evolutionItem": {
+                        "properties": {
+                          "id": {
+                            "type": "keyword"
+                          },
+                          "name": {
+                            "type": "text",
+                            "fields": {
+                              "keyword": {
+                                "type": "keyword",
+                                "ignore_above": 256
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  },
+                  "id": {
+                    "type": "keyword"
+                  },
+                  "name": {
+                    "type": "text",
+                    "fields": {
+                      "keyword": {
+                        "type": "keyword",
+                        "ignore_above": 256
+                      }
+                    }
+                  }
+                }
+              },
+              "id": {
+                "type": "keyword"
+              },
+              "name": {
+                "type": "text",
+                "fields": {
+                  "keyword": {
+                    "type": "keyword",
+                    "ignore_above": 256
+                  }
+                }
+              }
+            }
+          },
+          "pastBranch": {
+            "properties": {
+              "costToEvolve": {
+                "properties": {
+                  "candyCost": {
+                    "type": "long"
+                  }
+                }
+              },
+              "id": {
+                "type": "keyword"
+              },
+              "name": {
+                "type": "text",
+                "fields": {
+                  "keyword": {
+                    "type": "keyword",
+                    "ignore_above": 256
+                  }
+                }
+              },
+              "pastBranch": {
+                "properties": {
+                  "id": {
+                    "type": "keyword"
+                  },
+                  "name": {
+                    "type": "text",
+                    "fields": {
+                      "keyword": {
+                        "type": "keyword",
+                        "ignore_above": 256
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "family": {
+        "properties": {
+          "id": {
+            "type": "keyword"
+          },
+          "name": {
+            "type": "text",
+            "fields": {
+              "keyword": {
+                "type": "keyword",
+                "ignore_above": 256
+              }
+            }
+          }
+        }
+      },
+      "height": {
+        "type": "float"
+      },
+      "id": {
+        "type": "keyword"
+      },
+      "kmBuddyDistance": {
+        "type": "long"
+      },
+      "maxCP": {
+        "type": "long"
+      },
+      "modelHeight": {
+        "type": "float"
+      },
+      "modelScale": {
+        "type": "float"
+      },
+      "name": {
+        "type": "text",
+        "fields": {
+          "keyword": {
+            "type": "keyword",
+            "ignore_above": 256
+          }
+        }
+      },
+      "quickMoves": {
+        "properties": {
+          "id": {
+            "type": "keyword"
+          },
+          "name": {
+            "type": "text",
+            "fields": {
+              "keyword": {
+                "type": "keyword",
+                "ignore_above": 256
+              }
+            }
+          }
+        }
+      },
+      "rarity": {
+        "properties": {
+          "id": {
+            "type": "keyword"
+          },
+          "name": {
+            "type": "text",
+            "fields": {
+              "keyword": {
+                "type": "keyword",
+                "ignore_above": 256
+              }
+            }
+          }
+        }
+      },
+      "stats": {
+        "properties": {
+          "baseAttack": {
+            "type": "long"
+          },
+          "baseDefense": {
+            "type": "long"
+          },
+          "baseStamina": {
+            "type": "long"
+          }
+        }
+      },
+      "types": {
+        "properties": {
+          "id": {
+            "type": "keyword"
+          },
+          "name": {
+            "type": "text",
+            "fields": {
+              "keyword": {
+                "type": "keyword",
+                "ignore_above": 256
+              }
+            }
+          }
+        }
+      },
+      "weight": {
+        "type": "float"
+      }
+    }
+  }
+}
