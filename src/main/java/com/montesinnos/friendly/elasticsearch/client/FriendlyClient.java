@@ -218,8 +218,6 @@ public class FriendlyClient {
      * @return the percent of successful shards
      */
     public int flush(final String index) {
-        refresh(index);
-
         final FlushRequest request =
                 Strings.isNotBlank(index) ?
                         new FlushRequest(index.trim()) :

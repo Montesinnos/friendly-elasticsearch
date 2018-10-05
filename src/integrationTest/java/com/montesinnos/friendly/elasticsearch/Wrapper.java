@@ -1,14 +1,12 @@
 package com.montesinnos.friendly.elasticsearch;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.base.Charsets;
-import com.google.common.io.Resources;
+import com.montesinnos.friendly.commons.resources.ResourceUtils;
 import com.montesinnos.friendly.elasticsearch.bulk.Bulk;
 import com.montesinnos.friendly.elasticsearch.client.FriendlyClient;
 import com.montesinnos.friendly.elasticsearch.connection.Connection;
 
 import java.io.IOException;
-import java.net.URL;
 
 public class Wrapper {
     private static final String host = "localhost";
@@ -27,19 +25,12 @@ public class Wrapper {
         final Bulk bulk = new Bulk(connection.getClient());
         final FriendlyClient client = new FriendlyClient(connection.getClient());
 
-        final URL url = Resources.getResource("setup/pokemon.json");
-        final URL mapping = Resources.getResource("setup/pokemon-mapping.json");
-
         client.deleteIndex(INDEX_NAME);
-        try {
-            client.createIndex(INDEX_NAME, TYPE_NAME, Resources.toString(mapping, Charsets.UTF_8));
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+            client.createIndex(INDEX_NAME, TYPE_NAME, ResourceUtils.read("setup/pokemon-mapping.json"));
 
         try {
             new ObjectMapper()
-                    .readTree(Resources.toString(url, Charsets.UTF_8))
+                    .readTree(ResourceUtils.read("setup/pokemon.json"))
                     .forEach(x -> bulk.insert(INDEX_NAME, TYPE_NAME, x.toString()));
         } catch (IOException e) {
             e.printStackTrace();
