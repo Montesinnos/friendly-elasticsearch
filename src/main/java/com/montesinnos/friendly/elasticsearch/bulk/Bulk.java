@@ -78,12 +78,27 @@ public class Bulk {
                         source(record, XContentType.JSON));
     }
 
+
+    /**
+     * Inserts multiple docs into Elasticsearch
+     *
+     * @param index  index name to be used
+     * @param type   type name to be used
+     * @param record doc to be inserted
+     */
     public void insert(final String index, final String type, final String record) {
         bulkProcessor.add(
                 new IndexRequest(index, type).
                         source(record, XContentType.JSON));
     }
 
+    /**
+     * Inserts multiple docs into Elasticsearch
+     *
+     * @param index   index name to be used
+     * @param type    type name to be used
+     * @param records collection of docs to be inserted
+     */
     public void insert(final String index, final String type, final Collection<?> records) {
         final ObjectMapper objectMapper = new ObjectMapper().setSerializationInclusion(JsonInclude.Include.NON_NULL);
 
@@ -98,6 +113,14 @@ public class Bulk {
         });
     }
 
+    /**
+     * Inserts multiple docs into Elasticsearch
+     *
+     * @param index   index name to be used
+     * @param type    type name to be used
+     * @param idField field that contains the id for the doc. Json will be parsed and field value extracted
+     * @param records collection of docs to be inserted
+     */
     public void insert(final String index, final String type, final String idField, final Collection<?> records) {
         final ObjectMapper objectMapper = new ObjectMapper().setSerializationInclusion(JsonInclude.Include.NON_NULL);
 

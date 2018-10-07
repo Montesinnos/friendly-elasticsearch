@@ -15,6 +15,7 @@ import org.elasticsearch.rest.RestStatus;
 import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.SearchHits;
 import org.elasticsearch.search.builder.SearchSourceBuilder;
+import org.elasticsearch.search.fetch.subphase.FetchSourceContext;
 import org.elasticsearch.search.suggest.Suggest;
 import org.elasticsearch.search.suggest.SuggestBuilder;
 import org.elasticsearch.search.suggest.SuggestBuilders;
@@ -67,6 +68,23 @@ public class Search {
             throw new RuntimeException(e);
         }
         return sourceAsString;
+    }
+
+    public boolean exist(final String index, final String type, final String id) {
+        final GetRequest getRequest = new GetRequest(
+                index,
+                type,
+                id);
+        getRequest.fetchSourceContext(new FetchSourceContext(false));
+        getRequest.storedFields("_none_");
+
+        try {
+            final boolean exists = client.exists(getRequest, RequestOptions.DEFAULT);
+            return exists;
+        } catch (IOException e) {
+            e.printStackTrace();
+            throw new RuntimeException(e);
+        }
     }
 
     public List<Map<String, Object>> autocomplete(final String index, final String input) {

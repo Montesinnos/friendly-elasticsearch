@@ -3,6 +3,9 @@ package com.montesinnos.friendly.elasticsearch.document;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.elasticsearch.action.DocWriteResponse;
+import org.elasticsearch.action.delete.DeleteRequest;
+import org.elasticsearch.action.delete.DeleteResponse;
 import org.elasticsearch.action.index.IndexRequest;
 import org.elasticsearch.action.index.IndexResponse;
 import org.elasticsearch.action.update.UpdateRequest;
@@ -83,4 +86,34 @@ public class Document {
         }
         return update.getGetResult().sourceAsString();
     }
+
+
+    public DocWriteResponse.Result delete(final String index, final String type, final String id) {
+        final DeleteRequest request = new DeleteRequest(
+                index,
+                type,
+                id);
+        try {
+            final DeleteResponse deleteResponse = client.delete(
+                    request, RequestOptions.DEFAULT);
+
+            final long version = deleteResponse.getVersion();
+//
+//            final ReplicationResponse.ShardInfo shardInfo = deleteResponse.getShardInfo();
+//            if (shardInfo.getTotal() != shardInfo.getSuccessful()) {
+//
+//            }
+//            if (shardInfo.getFailed() > 0) {
+//                for (ReplicationResponse.ShardInfo.Failure failure :
+//                        shardInfo.getFailures()) {
+//                    String reason = failure.reason();
+//                }
+//            }
+            return deleteResponse.getResult();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+
 }
