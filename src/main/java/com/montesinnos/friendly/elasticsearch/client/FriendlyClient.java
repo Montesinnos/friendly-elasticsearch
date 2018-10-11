@@ -231,8 +231,8 @@ public class FriendlyClient {
 
             final int totalShards = flushResponse.getTotalShards();
             final int successfulShards = flushResponse.getSuccessfulShards();
-            final int failedShards = flushResponse.getFailedShards();
-            final DefaultShardOperationFailedException[] failures = flushResponse.getShardFailures();
+//            final int failedShards = flushResponse.getFailedShards();
+//            final DefaultShardOperationFailedException[] failures = flushResponse.getShardFailures();
 
             return successfulShards * 100 / totalShards;
         } catch (ElasticsearchException exception) {

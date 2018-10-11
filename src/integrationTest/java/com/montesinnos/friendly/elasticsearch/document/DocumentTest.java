@@ -7,9 +7,9 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class DocumentTest {
-    final Document document = new Document(Wrapper.getConnection().getClient());
-    final String index = "Document_test_index";
-    final String type = "Document_test_type";
+    private final Document document = new Document(Wrapper.getConnection().getClient());
+    private final String index = "document_test_index";
+    private final String type = "document_test_type";
 
     @Test
     void insertTest() {
@@ -20,6 +20,10 @@ class DocumentTest {
 
     @Test
     void updateTest() {
+        document.insert(index, type, "{}");
+        document.insert(index, type, "update_id_1", "{}");
+        final String update = document.update(index, type, "update_id_1", "{\"id\":1}");
+        assertEquals("UPDATED", update);
     }
 
     @Test
@@ -29,6 +33,5 @@ class DocumentTest {
         assertEquals(DocWriteResponse.Result.DELETED, result);
         final DocWriteResponse.Result result2 = document.delete(index, type, "delete_id_non_existing");
         assertEquals(DocWriteResponse.Result.NOT_FOUND, result2);
-
     }
 }

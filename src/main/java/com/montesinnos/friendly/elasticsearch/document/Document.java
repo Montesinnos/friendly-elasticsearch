@@ -69,22 +69,30 @@ public class Document {
         }
     }
 
-    public String update(final String index, final String type, final String id, final Object object) {
+    public String update(final String index, final String type, final String id, final String update) {
         final UpdateRequest updateRequest = new UpdateRequest(index, type, id);
 
-        try {
-            updateRequest.doc(objectMapper.writeValueAsString(object));
-        } catch (JsonProcessingException e) {
-            throw new RuntimeException(e);
-        }
+        updateRequest.doc(update, XContentType.JSON);
 
-        final UpdateResponse update;
+
+        final UpdateResponse updateResponse;
         try {
-            update = this.client.update(updateRequest, RequestOptions.DEFAULT);
+            updateResponse = this.client.update(updateRequest, RequestOptions.DEFAULT);
+            long version = updateResponse.getVersion();
+            if (updateResponse.getResult() == DocWriteResponse.Result.CREATED) {
+                return "CREATED";
+            } else if (updateResponse.getResult() == DocWriteResponse.Result.UPDATED) {
+                return "UPDATED";
+            } else if (updateResponse.getResult() == DocWriteResponse.Result.DELETED) {
+                return "DELETED";
+            } else if (updateResponse.getResult() == DocWriteResponse.Result.NOOP) {
+                return "NOOP";
+            }
+
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-        return update.getGetResult().sourceAsString();
+        return updateResponse.getGetResult().sourceAsString();
     }
 
 

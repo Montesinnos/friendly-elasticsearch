@@ -26,7 +26,7 @@ public class Wrapper {
         final FriendlyClient client = new FriendlyClient(connection.getClient());
 
         client.deleteIndex(INDEX_NAME);
-            client.createIndex(INDEX_NAME, TYPE_NAME, ResourceUtils.read("setup/pokemon-mapping.json"));
+        client.createIndex(INDEX_NAME, TYPE_NAME, ResourceUtils.read("setup/pokemon-mapping.json"));
 
         try {
             new ObjectMapper()

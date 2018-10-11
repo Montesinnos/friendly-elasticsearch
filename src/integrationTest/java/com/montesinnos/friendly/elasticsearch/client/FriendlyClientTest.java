@@ -50,10 +50,11 @@ class FriendlyClientTest {
     @DisplayName("Index flush")
     void flushTest() {
         final FriendlyClient client = new FriendlyClient(connection.getClient());
-        assertEquals(ClusterHealthStatus.GREEN, client.flush(Wrapper.INDEX_NAME));
+        assertTrue(client.flush(Wrapper.INDEX_NAME) > 0);
     }
 
     @Test
+    @DisplayName("Create Index")
     void createIndexTest() {
         final FriendlyClient client = new FriendlyClient(connection.getClient());
         client.deleteIndex(createIndexName);
