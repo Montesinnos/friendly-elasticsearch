@@ -13,8 +13,6 @@ services:
       memlock:
         soft: -1
         hard: -1
-    volumes:
-    - esdata1test:/usr/share/elasticsearch/data
     ports:
     - 59200:9200
     - 59300:9300
@@ -32,16 +30,9 @@ services:
       memlock:
         soft: -1
         hard: -1
-    volumes:
-    - esdata2test:/usr/share/elasticsearch/data
     networks:
     - esnettest
   #End of Elasticsearch
 
-volumes:
-  esdata1test:
-    driver: local
-  esdata2test:
-    driver: local
 networks:
   esnettest:
