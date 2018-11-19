@@ -21,18 +21,19 @@ import org.elasticsearch.common.xcontent.XContentType;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
 
 public class Bulk {
     private static final Logger logger = LogManager.getLogger(Bulk.class);
     final FriendlyClient client;
-
+    private final BulkProcessor bulkProcessor;
+    private final BulkMetrics bulkMetrics;
     final BulkProcessor.Listener listener = new BulkProcessor.Listener() {
         @Override
         public void beforeBulk(long executionId, BulkRequest request) {
             int numberOfActions = request.numberOfActions();
             logger.debug("Executing bulk [{}] with {} requests",
                     executionId, numberOfActions);
+            bulkMetrics.incInserted(numberOfActions);
         }
 
         @Override
@@ -40,6 +41,16 @@ public class Bulk {
                               BulkResponse response) {
             if (response.hasFailures()) {
                 logger.warn("Bulk [{}] executed with failures", executionId);
+//
+//                BulkItemResponse[] responses = response.getItems();
+//                for (int i = 0; i < responses.length; i++) {
+//                    BulkItemResponse r = responses[i];
+//                    if (r.isFailed()) {
+//
+//                        System.out.println(request.getDescription());
+//                    }
+//                }
+
                 logger.warn(response.buildFailureMessage());
             } else {
                 logger.debug("Bulk [{}] completed in {} milliseconds",
@@ -52,30 +63,35 @@ public class Bulk {
             logger.error("Failed to execute bulk [{}]", executionId, failure);
         }
     };
+    private final int bulkActions = 2000;
+    private final int bulkSize = 10; //MB
+    private final int flushInterval = 100; //Seconds
 
-    private final AtomicInteger recordsInserted;
-    private final BulkProcessor bulkProcessor;
 
     public Bulk(final RestHighLevelClient client) {
         this.client = new FriendlyClient(client);
         final BulkProcessor.Builder builder = BulkProcessor.builder(
                 (request, bulkListener) -> client.bulkAsync(request, RequestOptions.DEFAULT, bulkListener), listener);
-        builder.setBulkActions(500);
-        builder.setBulkSize(new ByteSizeValue(1L, ByteSizeUnit.MB));
+        builder.setBulkActions(bulkActions);
+        builder.setBulkSize(new ByteSizeValue(bulkSize, ByteSizeUnit.MB));
         builder.setConcurrentRequests(0);
-        builder.setFlushInterval(TimeValue.timeValueSeconds(10L));
+        builder.setFlushInterval(TimeValue.timeValueSeconds(flushInterval));
         builder.setBackoffPolicy(BackoffPolicy
                 .exponentialBackoff(TimeValue.timeValueSeconds(2L), 3));
 
         bulkProcessor = builder.build();
-
-        recordsInserted = new AtomicInteger(0);
+        bulkMetrics = new BulkMetrics();
     }
 
     public void insert(final String index, final String type, final String id, final String record) {
         bulkProcessor.add(
                 new IndexRequest(index, type, id).
                         source(record, XContentType.JSON));
+        inc();
+    }
+
+    private long inc() {
+        return bulkMetrics.incAdded();
     }
 
 
@@ -90,6 +106,7 @@ public class Bulk {
         bulkProcessor.add(
                 new IndexRequest(index, type).
                         source(record, XContentType.JSON));
+        inc();
     }
 
     /**
@@ -107,6 +124,7 @@ public class Bulk {
                 bulkProcessor.add(
                         new IndexRequest(index, type).
                                 source(objectMapper.writeValueAsString(record), XContentType.JSON));
+                inc();
             } catch (JsonProcessingException e) {
                 e.printStackTrace();
             }
@@ -131,6 +149,7 @@ public class Bulk {
                 bulkProcessor.add(
                         new IndexRequest(index, type, id).
                                 source(json, XContentType.JSON));
+                inc();
             } catch (JsonProcessingException e) {
                 e.printStackTrace();
             } catch (IOException e) {
@@ -147,21 +166,12 @@ public class Bulk {
     }
 
     /**
-     * Increments the count of records being isrted
-     *
-     * @return new value
-     */
-    private int inc() {
-        return recordsInserted.incrementAndGet();
-    }
-
-    /**
      * Gets current number of records inserted
      *
      * @return number of records inserted
      */
-    public int getRecordsInserted() {
-        return recordsInserted.get();
+    public long getRecordsAdded() {
+        return bulkMetrics.getRecordsAdded();
     }
 
     public void close() {

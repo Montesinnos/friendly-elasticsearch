@@ -70,6 +70,14 @@ public class Search {
         return sourceAsString;
     }
 
+    /**
+     * Checks if a doc exists in the provided index, by matching the id
+     *
+     * @param index index name to be searched
+     * @param type  type name to be searched
+     * @param id    ID of the document to be checked
+     * @return true if doc exists
+     */
     public boolean exist(final String index, final String type, final String id) {
         final GetRequest getRequest = new GetRequest(
                 index,
@@ -117,16 +125,16 @@ public class Search {
         return suggestions;
     }
 
-    public List<Map<String, Object>> find(final String index, QueryBuilder qb) {
+    public SearchResults find(final String index, QueryBuilder qb) {
         final SearchRequest searchRequest = new SearchRequest(index);
         final SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
         searchSourceBuilder.query(qb);
-        searchSourceBuilder.from(0);
+//        searchSourceBuilder.from(0);
         searchSourceBuilder.size(5);
         searchSourceBuilder.timeout(new TimeValue(60, TimeUnit.SECONDS));
         searchRequest.source(searchSourceBuilder);
 
-        SearchResponse searchResponse = null;
+        final SearchResponse searchResponse;
         try {
             searchResponse = client.search(searchRequest, RequestOptions.DEFAULT);
         } catch (IOException e) {
@@ -148,8 +156,12 @@ public class Search {
         final long totalHits = hits.getTotalHits();
         final float maxScore = hits.getMaxScore();
 
-        return Arrays.stream(hits.getHits())
-                .map(SearchHit::getSourceAsMap)
-                .collect(Collectors.toList());
+        final Metadata metadata = new Metadata(totalHits, maxScore);
+        return new SearchResults(
+                Arrays.stream(hits.getHits())
+                        .map(SearchHit::getSourceAsMap)
+                        .collect(Collectors.toList()),
+                metadata
+        );
     }
 }

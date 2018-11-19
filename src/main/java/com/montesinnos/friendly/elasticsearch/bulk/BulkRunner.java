@@ -23,7 +23,5 @@ public class BulkRunner {
         }
 
         final Bulk bulk = new Bulk(connection.getClient());
-
-
     }
 }

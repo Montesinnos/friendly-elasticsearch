@@ -6,8 +6,8 @@ import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-class DocumentTest {
-    private final Document document = new Document(Wrapper.getConnection().getClient());
+class ImmediateDocumentTest {
+    private final Document document = DocumentFactory.immediate(Wrapper.getConnection().getClient());
     private final String index = "document_test_index";
     private final String type = "document_test_type";
 
@@ -24,6 +24,14 @@ class DocumentTest {
         document.insert(index, type, "update_id_1", "{}");
         final String update = document.update(index, type, "update_id_1", "{\"id\":1}");
         assertEquals("UPDATED", update);
+    }
+
+    @Test
+    void updateAndGetTest() {
+        document.insert(index, type, "{}");
+        document.insert(index, type, "update_and_get_id_1", "{\"field\":2}");
+        final String update = document.updateAndGet(index, type, "update_and_get_id_1", "{\"id\":1}");
+        assertEquals("{\"field\":2,\"id\":1}", update);
     }
 
     @Test

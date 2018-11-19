@@ -37,6 +37,5 @@ class BulkTest {
     void flushTest() {
         final Bulk bulk = new Bulk(connection.getClient());
         bulk.flush();
-
     }
 }

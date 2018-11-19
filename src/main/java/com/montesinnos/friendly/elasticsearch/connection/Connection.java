@@ -1,5 +1,6 @@
 package com.montesinnos.friendly.elasticsearch.connection;
 
+import com.google.common.base.Stopwatch;
 import org.apache.http.HttpHost;
 import org.apache.http.HttpRequestInterceptor;
 import org.apache.logging.log4j.LogManager;
@@ -13,6 +14,7 @@ import org.elasticsearch.client.RestHighLevelClient;
 import org.elasticsearch.cluster.ClusterName;
 
 import java.io.IOException;
+import java.util.concurrent.TimeUnit;
 
 
 public class Connection {
@@ -24,18 +26,20 @@ public class Connection {
     }
 
     public Connection(final String host, final int port, final String protocol) {
+        final Stopwatch timer = Stopwatch.createStarted();
         client = new RestHighLevelClient(
                 RestClient.builder(
                         new HttpHost(host, port, protocol)));
-        checkInfo();
+        logger.info("Connected to {} in {}ms", host, timer.elapsed(TimeUnit.MILLISECONDS));
     }
 
     public Connection(final String host, final int port, final String protocol, final HttpRequestInterceptor interceptor) {
+        final Stopwatch timer = Stopwatch.createStarted();
         client = new RestHighLevelClient(
                 RestClient.builder(
                         new HttpHost(host, port, protocol))
                         .setHttpClientConfigCallback(hacb -> hacb.addInterceptorLast(interceptor)));
-        checkInfo();
+        logger.info("Connected to {} in {}ms", host, timer.elapsed(TimeUnit.MILLISECONDS));
     }
 
     public void checkInfo() {

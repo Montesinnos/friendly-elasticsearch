@@ -71,6 +71,7 @@ class FriendlyClientTest {
     }
 
     @Test
+    @DisplayName("Index exists")
     void indexExistsTest() {
         final FriendlyClient client = new FriendlyClient(connection.getClient());
         assertFalse(client.indexExists("garbage-don-t-work"));
@@ -78,8 +79,11 @@ class FriendlyClientTest {
     }
 
     @Test
+    @DisplayName("Delete index")
     void deleteIndexTest() {
         final FriendlyClient client = new FriendlyClient(connection.getClient());
+        client.deleteIndex(deleteIndexName);
+        client.createIndex(deleteIndexName);
         assertTrue(client.deleteIndex(deleteIndexName));
     }
 }
