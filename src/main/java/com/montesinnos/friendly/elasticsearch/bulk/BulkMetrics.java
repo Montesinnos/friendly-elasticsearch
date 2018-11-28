@@ -15,12 +15,12 @@ public class BulkMetrics {
     private final AtomicInteger recordsAdded;
     private final AtomicInteger recordsInserted;
     private final Stopwatch stopwatch;
-    private long reportSize;
+    private int reportSize;
 
     public BulkMetrics() {
         recordsAdded = new AtomicInteger(0);
         recordsInserted = new AtomicInteger(0);
-        reportSize = 1000L;
+        this.reportSize = 1000;
 
         stopwatch = Stopwatch.createStarted();
     }
@@ -42,7 +42,7 @@ public class BulkMetrics {
      *
      * @param reportSize How many actions before any report is printed
      */
-    public void setReportSize(long reportSize) {
+    public void setReportSize(int reportSize) {
         this.reportSize = reportSize;
     }
 

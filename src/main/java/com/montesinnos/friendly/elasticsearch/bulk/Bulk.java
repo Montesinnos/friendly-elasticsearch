@@ -3,6 +3,8 @@ package com.montesinnos.friendly.elasticsearch.bulk;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.montesinnos.friendly.commons.file.FileUtils;
+import com.montesinnos.friendly.commons.file.TextFileUtils;
 import com.montesinnos.friendly.elasticsearch.client.FriendlyClient;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -19,15 +21,19 @@ import org.elasticsearch.common.unit.TimeValue;
 import org.elasticsearch.common.xcontent.XContentType;
 
 import java.io.IOException;
+import java.nio.file.Path;
 import java.util.Collection;
 import java.util.concurrent.TimeUnit;
 
 public class Bulk {
     private static final Logger logger = LogManager.getLogger(Bulk.class);
-    final FriendlyClient client;
+    private final FriendlyClient client;
     private final BulkProcessor bulkProcessor;
     private final BulkMetrics bulkMetrics;
-    final BulkProcessor.Listener listener = new BulkProcessor.Listener() {
+    private final BulkConfiguration bulkConfiguration;
+
+
+    private final BulkProcessor.Listener listener = new BulkProcessor.Listener() {
         @Override
         public void beforeBulk(long executionId, BulkRequest request) {
             int numberOfActions = request.numberOfActions();
@@ -63,25 +69,29 @@ public class Bulk {
             logger.error("Failed to execute bulk [{}]", executionId, failure);
         }
     };
-    private final int bulkActions = 2000;
-    private final int bulkSize = 10; //MB
-    private final int flushInterval = 100; //Seconds
 
 
     public Bulk(final RestHighLevelClient client) {
+        this(client, new BulkConfiguration.Builder().build());
+    }
+
+    public Bulk(final RestHighLevelClient client, final BulkConfiguration bulkConfiguration) {
         this.client = new FriendlyClient(client);
+        this.bulkConfiguration = bulkConfiguration;
         final BulkProcessor.Builder builder = BulkProcessor.builder(
                 (request, bulkListener) -> client.bulkAsync(request, RequestOptions.DEFAULT, bulkListener), listener);
-        builder.setBulkActions(bulkActions);
-        builder.setBulkSize(new ByteSizeValue(bulkSize, ByteSizeUnit.MB));
-        builder.setConcurrentRequests(0);
-        builder.setFlushInterval(TimeValue.timeValueSeconds(flushInterval));
+        builder.setBulkActions(bulkConfiguration.getBulkActions());
+        builder.setBulkSize(new ByteSizeValue(bulkConfiguration.getBulkSize(), ByteSizeUnit.MB));
+        builder.setConcurrentRequests(bulkConfiguration.getConcurrentRequests());
+        builder.setFlushInterval(TimeValue.timeValueSeconds(bulkConfiguration.getFlushInterval()));
         builder.setBackoffPolicy(BackoffPolicy
                 .exponentialBackoff(TimeValue.timeValueSeconds(2L), 3));
 
         bulkProcessor = builder.build();
         bulkMetrics = new BulkMetrics();
+        bulkMetrics.setReportSize(bulkConfiguration.getReportSize());
     }
+
 
     public void insert(final String index, final String type, final String id, final String record) {
         bulkProcessor.add(
@@ -156,6 +166,20 @@ public class Bulk {
                 e.printStackTrace();
             }
         });
+    }
+
+    /**
+     * @param index   index name to be used
+     * @param type    type name to be used
+     * @param idField field that contains the id for the doc. Json will be parsed and field value extracted
+     * @param path    to a file or directory with the records to insert
+     */
+    public void insert(final String index, final String type, final String idField, final Path path) {
+        FileUtils.getFiles(path)
+                .forEach(x -> {
+                    TextFileUtils.readLines(x)
+                            .forEach(line -> insert(index, type, idField, line));
+                });
     }
 
     /**
