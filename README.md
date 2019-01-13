@@ -1,6 +1,21 @@
 # friendly-elasticsearch
 Sometimes you just want ElasticSearch to work for a minute. 
 
+## Install
+
+```
+compile "com.montesinnos.friendly:friendly-elasticsearch:0.1.2-SNAPSHOT"
+```
+
+Gradle Repository configuration
+```
+repositories {
+    mavenCentral()
+    maven {
+        url 'https://oss.sonatype.org/content/repositories/snapshots/'
+    }
+}
+```
 
 ## Description
 Just want to get some ElasticSearch clusters or queries out and don't care so much about learning the specifics?
