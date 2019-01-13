@@ -87,8 +87,8 @@ public class FriendlyClient {
 //            e.printStackTrace();
         }
 
-        //TODO wait until they release this
-        //CountRequest countRequest = new CountRequest("index");
+//        TODO wait until they release this
+//        CountRequest countRequest = new CountRequest("index");
         return 0L;
     }
 
@@ -269,8 +269,8 @@ public class FriendlyClient {
 
             for (Map.Entry<String, SyncedFlushResponse.IndexResult> responsePerIndexEntry :
                     flushSyncedResponse.getIndexResults().entrySet()) {
-                String indexName = responsePerIndexEntry.getKey();
-                SyncedFlushResponse.IndexResult indexResult = responsePerIndexEntry.getValue();
+                final String indexName = responsePerIndexEntry.getKey();
+                final SyncedFlushResponse.IndexResult indexResult = responsePerIndexEntry.getValue();
                 int totalShardsForIndex = indexResult.totalShards();
                 int successfulShardsForIndex = indexResult.successfulShards();
                 int failedShardsForIndex = indexResult.failedShards();
