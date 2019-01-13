@@ -33,7 +33,7 @@ publishing {
 }
 
 dependencies {
-    compile "com.montesinnos.friendly:commons:0.1.1-SNAPSHOT"
+    compile "com.montesinnos.friendly:commons:0.1.4-SNAPSHOT"
 
     // https://mvnrepository.com/artifact/org.elasticsearch.client/elasticsearch-rest-high-level-client
     compile group: 'org.elasticsearch.client', name: 'elasticsearch-rest-high-level-client', version: '6.5.3'
