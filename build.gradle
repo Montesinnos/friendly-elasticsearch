@@ -3,7 +3,7 @@ plugins {
     id 'maven-publish'
     id 'java'
     id 'idea'
-    id 'org.unbroken-dome.test-sets' version '1.5.1'
+    id 'org.unbroken-dome.test-sets' version '2.1.1'
     id 'signing'
     id 'java-library'
 }
@@ -33,14 +33,14 @@ publishing {
 }
 
 dependencies {
-    compile "com.montesinnos.friendly:commons:0.1.4-SNAPSHOT"
+    compile "com.montesinnos.friendly:commons:0.1.6-SNAPSHOT"
 
     // https://mvnrepository.com/artifact/org.elasticsearch.client/elasticsearch-rest-high-level-client
-    compile group: 'org.elasticsearch.client', name: 'elasticsearch-rest-high-level-client', version: '6.5.3'
+    compile group: 'org.elasticsearch.client', name: 'elasticsearch-rest-high-level-client', version: '6.6.0'
 
-    testCompile 'org.junit.jupiter:junit-jupiter-api:5.3.2'
-    testCompile 'org.junit.jupiter:junit-jupiter-params:5.3.2'
-    testRuntime 'org.junit.jupiter:junit-jupiter-engine:5.3.2'
+    testCompile 'org.junit.jupiter:junit-jupiter-api:5.4.0'
+    testCompile 'org.junit.jupiter:junit-jupiter-params:5.4.0'
+    testRuntime 'org.junit.jupiter:junit-jupiter-engine:5.4.0'
 }
 
 test {
