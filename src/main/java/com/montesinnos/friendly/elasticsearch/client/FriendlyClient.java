@@ -1,5 +1,6 @@
 package com.montesinnos.friendly.elasticsearch.client;
 
+import com.montesinnos.friendly.elasticsearch.index.IndexConfiguration;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.util.Strings;
@@ -7,6 +8,8 @@ import org.elasticsearch.ElasticsearchException;
 import org.elasticsearch.ElasticsearchStatusException;
 import org.elasticsearch.action.admin.cluster.health.ClusterHealthRequest;
 import org.elasticsearch.action.admin.cluster.health.ClusterHealthResponse;
+import org.elasticsearch.action.admin.indices.alias.IndicesAliasesRequest;
+import org.elasticsearch.action.admin.indices.alias.get.GetAliasesRequest;
 import org.elasticsearch.action.admin.indices.create.CreateIndexRequest;
 import org.elasticsearch.action.admin.indices.create.CreateIndexResponse;
 import org.elasticsearch.action.admin.indices.delete.DeleteIndexRequest;
@@ -19,11 +22,9 @@ import org.elasticsearch.action.admin.indices.refresh.RefreshResponse;
 import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.action.support.master.AcknowledgedResponse;
-import org.elasticsearch.client.RequestOptions;
-import org.elasticsearch.client.RestClient;
-import org.elasticsearch.client.RestHighLevelClient;
-import org.elasticsearch.client.SyncedFlushResponse;
+import org.elasticsearch.client.*;
 import org.elasticsearch.cluster.health.ClusterHealthStatus;
+import org.elasticsearch.cluster.metadata.AliasMetaData;
 import org.elasticsearch.common.UUIDs;
 import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.common.unit.TimeValue;
@@ -33,7 +34,11 @@ import org.elasticsearch.rest.RestStatus;
 import org.elasticsearch.search.builder.SearchSourceBuilder;
 
 import java.io.IOException;
+import java.util.Collection;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 public class FriendlyClient {
     private static final Logger logger = LogManager.getLogger(FriendlyClient.class);
@@ -47,7 +52,7 @@ public class FriendlyClient {
     }
 
     public static String generateIDs() {
-        return UUIDs.base64UUID();
+        return UUIDs.base64UUID().toLowerCase();
     }
 
     public RestHighLevelClient getClient() {
@@ -132,7 +137,10 @@ public class FriendlyClient {
      * @return name of the index created
      */
     public String createIndex(final String index) {
-        return createIndex(index, null, null);
+        final IndexConfiguration indexConfiguration = new IndexConfiguration.Builder()
+                .name(index)
+                .build();
+        return createIndex(indexConfiguration);
     }
 
     /**
@@ -145,21 +153,39 @@ public class FriendlyClient {
      * @return name of the index created
      */
     public String createIndex(final String index, final String type, final String mapping) {
-        final CreateIndexRequest request = new CreateIndexRequest(index);
-        request.settings(Settings.builder()
-                .put("index.number_of_shards", 5)
-                .put("index.number_of_replicas", 0)
-                .put("index.refresh_interval", -1)
-        );
+
+        final IndexConfiguration indexConfiguration = new IndexConfiguration.Builder()
+                .name(index)
+                .typeName(type)
+                .mapping(mapping).build();
+
+        return createIndex(indexConfiguration);
+    }
+
+    public String createIndex(final IndexConfiguration indexConfiguration) {
+        final CreateIndexRequest request = new CreateIndexRequest(indexConfiguration.getName());
+        Settings.Builder builder = Settings.builder()
+                .put("index.number_of_shards", indexConfiguration.getNumberOfShards())
+                .put("index.number_of_replicas", indexConfiguration.getNumberOfReplicas())
+                .put("index.refresh_interval", indexConfiguration.getRefreshInterval());
+
         request.timeout(TimeValue.timeValueMinutes(2));
-        if (Strings.isNotBlank(mapping)) {
-            request.mapping(type,
-                    mapping,
+
+        if (Strings.isNotBlank(indexConfiguration.getMapping())) {
+            request.mapping(indexConfiguration.getTypeName(),
+                    indexConfiguration.getMapping(),
                     XContentType.JSON);
         }
 
+
+        if (Strings.isNotBlank(indexConfiguration.getSortField())) {
+            builder.put("index.sort.field", indexConfiguration.getSortField());
+            builder.put("index.sort.order", indexConfiguration.getSortOrder());
+        }
+        request.settings(builder.build());
         return createIndex(request);
     }
+
 
     /**
      * Creates an index using the name provided, generating a type with the mapping
@@ -336,5 +362,63 @@ public class FriendlyClient {
                 throw new RuntimeException(e);
             }
         }
+    }
+
+
+    public List<String> getAliases(final String index) {
+        final GetAliasesRequest request = new GetAliasesRequest();
+        request.indices(index);
+        try {
+            final GetAliasesResponse response = client.indices().getAlias(request, RequestOptions.DEFAULT);
+            final Map<String, Set<AliasMetaData>> aliases = response.getAliases();
+            return aliases.values().stream().flatMap(Collection::stream).map(AliasMetaData::alias).collect(Collectors.toList());
+
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public AcknowledgedResponse updateAlias(final IndicesAliasesRequest.AliasActions aliasAction) {
+        final IndicesAliasesRequest request = new IndicesAliasesRequest();
+        request.addAliasAction(aliasAction);
+        try {
+            final AcknowledgedResponse indicesAliasesResponse =
+                    client.indices().updateAliases(request, RequestOptions.DEFAULT);
+            return indicesAliasesResponse;
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    /**
+     * Adds an alias to an index
+     *
+     * @param index to be modified
+     * @param alias alias to be added
+     * @return name of the alias
+     */
+    public String addAlias(final String index, final String alias) {
+        final IndicesAliasesRequest.AliasActions aliasAction =
+                new IndicesAliasesRequest.AliasActions(IndicesAliasesRequest.AliasActions.Type.ADD)
+                        .index(index)
+                        .alias(alias);
+        updateAlias(aliasAction);
+        return alias;
+    }
+
+    /**
+     * Removes an alias to an index
+     *
+     * @param index to be modified
+     * @param alias alias to be removed
+     * @return name of the alias
+     */
+    public String removeAlias(final String index, final String alias) {
+        final IndicesAliasesRequest.AliasActions aliasAction =
+                new IndicesAliasesRequest.AliasActions(IndicesAliasesRequest.AliasActions.Type.REMOVE)
+                        .index(index)
+                        .alias(alias);
+        updateAlias(aliasAction);
+        return alias;
     }
 }

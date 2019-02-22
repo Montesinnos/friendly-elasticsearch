@@ -9,10 +9,7 @@ class FriendlyClientTest {
     @Test
     void generateIDsTest() {
         final String id = FriendlyClient.generateIDs();
+        assertEquals(id, id.toLowerCase());
         assertEquals(20, id.length());
-    }
-
-    @Test
-    void getClientTest() {
     }
 }

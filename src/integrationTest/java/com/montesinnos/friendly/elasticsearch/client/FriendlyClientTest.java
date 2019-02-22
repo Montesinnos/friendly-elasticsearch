@@ -2,8 +2,10 @@ package com.montesinnos.friendly.elasticsearch.client;
 
 import com.google.common.base.Charsets;
 import com.google.common.io.Resources;
+import com.montesinnos.friendly.commons.resources.ResourceUtils;
 import com.montesinnos.friendly.elasticsearch.Wrapper;
 import com.montesinnos.friendly.elasticsearch.connection.Connection;
+import com.montesinnos.friendly.elasticsearch.index.IndexConfiguration;
 import org.elasticsearch.cluster.health.ClusterHealthStatus;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
@@ -11,12 +13,16 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 class FriendlyClientTest {
-    private static final String createIndexName = "test-delete-me-" + FriendlyClient.generateIDs().toLowerCase();
-    private static final String createIndexFromSettingsName = "test-delete-me-" + FriendlyClient.generateIDs().toLowerCase();
+    private static final String createIndexName = "test-delete-me-" + FriendlyClient.generateIDs();
+    private static final String createIndexFromSettingsName = "test-delete-me-" + FriendlyClient.generateIDs();
+    private static final String aliasName = "test-alias-" + FriendlyClient.generateIDs();
     private static final String deleteIndexName = FriendlyClient.generateIDs();
     private static Connection connection;
 
@@ -71,6 +77,24 @@ class FriendlyClientTest {
     }
 
     @Test
+    void createIndexFromConfiguratorTest() {
+        final FriendlyClient client = new FriendlyClient(connection.getClient());
+
+        final IndexConfiguration indexConfiguration = new IndexConfiguration.Builder()
+                .name(createIndexName)
+                .typeName("pokemon")
+                .mapping(ResourceUtils.read("setup/pokemon-mapping.json"))
+                .sortField("animationTime")
+                .sortOrder("desc")
+                .numberOfShards(10)
+                .numberOfReplicas(5)
+                .refreshInterval(-1)
+                .build();
+        client.deleteIndex(createIndexName);
+        assertEquals(createIndexName, client.createIndex(indexConfiguration));
+    }
+
+    @Test
     @DisplayName("Index exists")
     void indexExistsTest() {
         final FriendlyClient client = new FriendlyClient(connection.getClient());
@@ -85,5 +109,41 @@ class FriendlyClientTest {
         client.deleteIndex(deleteIndexName);
         client.createIndex(deleteIndexName);
         assertTrue(client.deleteIndex(deleteIndexName));
+    }
+
+    @Test
+    @DisplayName("Add and Remove Alias")
+    void addAliasTest() {
+        final FriendlyClient client = new FriendlyClient(connection.getClient());
+        client.deleteIndex(createIndexName);
+        client.createIndex(createIndexName);
+        final String alias = client.addAlias(createIndexName, aliasName);
+        assertIterableEquals(new ArrayList<>(Collections.singletonList(alias)),
+                client.getAliases(createIndexName));
+    }
+
+    @Test
+    @DisplayName("Remove Alias")
+    void removeAliasTest() {
+        final FriendlyClient client = new FriendlyClient(connection.getClient());
+        client.deleteIndex(createIndexName);
+        client.createIndex(createIndexName);
+        final String alias = client.addAlias(createIndexName, aliasName);
+        assertIterableEquals(new ArrayList<>(Collections.singletonList(alias)),
+                client.getAliases(createIndexName));
+
+        client.removeAlias(createIndexName, aliasName);
+        assertTrue(client.getAliases(createIndexName).isEmpty());
+    }
+
+    @Test
+    @DisplayName("Get Aliases")
+    void getAliasesTest() {
+        final FriendlyClient client = new FriendlyClient(connection.getClient());
+        client.deleteIndex(createIndexName);
+        client.createIndex(createIndexName);
+        client.addAlias(createIndexName, aliasName);
+        final List<String> aliases = client.getAliases(createIndexName);
+        assertIterableEquals(new ArrayList<>(Collections.singletonList(aliasName)), aliases);
     }
 }
