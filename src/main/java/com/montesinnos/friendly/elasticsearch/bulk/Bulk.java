@@ -30,8 +30,6 @@ public class Bulk {
     private final FriendlyClient client;
     private final BulkProcessor bulkProcessor;
     private final BulkMetrics bulkMetrics;
-    private final BulkConfiguration bulkConfiguration;
-
 
     private final BulkProcessor.Listener listener = new BulkProcessor.Listener() {
         @Override
@@ -77,7 +75,6 @@ public class Bulk {
 
     public Bulk(final RestHighLevelClient client, final BulkConfiguration bulkConfiguration) {
         this.client = new FriendlyClient(client);
-        this.bulkConfiguration = bulkConfiguration;
         final BulkProcessor.Builder builder = BulkProcessor.builder(
                 (request, bulkListener) -> client.bulkAsync(request, RequestOptions.DEFAULT, bulkListener), listener);
         builder.setBulkActions(bulkConfiguration.getBulkActions());
@@ -92,7 +89,14 @@ public class Bulk {
         bulkMetrics.setReportSize(bulkConfiguration.getReportSize());
     }
 
-
+    /**
+     * Inserts a doc into Elasticsearch
+     *
+     * @param index  index name to be used
+     * @param type   type name to be used
+     * @param id     for the document
+     * @param record doc to be inserted
+     */
     public void insert(final String index, final String type, final String id, final String record) {
         bulkProcessor.add(
                 new IndexRequest(index, type, id).
@@ -106,7 +110,7 @@ public class Bulk {
 
 
     /**
-     * Inserts multiple docs into Elasticsearch
+     * Inserts a doc into Elasticsearch
      *
      * @param index  index name to be used
      * @param type   type name to be used
@@ -190,6 +194,15 @@ public class Bulk {
     }
 
     /**
+     * Flushes and refreshes the Bulk
+     */
+    public void refresh() {
+        bulkProcessor.flush();
+        client.refresh();
+        client.flush();
+    }
+
+    /**
      * Gets current number of records inserted
      *
      * @return number of records inserted
@@ -199,11 +212,9 @@ public class Bulk {
     }
 
     public void close() {
-        bulkProcessor.flush();
-        client.refresh();
-        client.flush();
+        refresh();
         try {
-            boolean terminated = bulkProcessor.awaitClose(1, TimeUnit.MINUTES);
+            boolean terminated = bulkProcessor.awaitClose(3, TimeUnit.MINUTES);
             logger.info("Bulk Processor closing. Terminated: {}", terminated);
         } catch (InterruptedException e) {
             e.printStackTrace();

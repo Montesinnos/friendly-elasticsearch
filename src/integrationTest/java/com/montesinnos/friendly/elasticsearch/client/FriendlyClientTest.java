@@ -42,7 +42,7 @@ class FriendlyClientTest {
     @DisplayName("Wait for green")
     void waitForGreenTest() {
         final FriendlyClient client = new FriendlyClient(connection.getClient());
-        assertEquals(ClusterHealthStatus.GREEN, client.waitForGreen(10));
+        assertEquals(ClusterHealthStatus.GREEN, client.waitForGreen(30));
     }
 
     @Test
