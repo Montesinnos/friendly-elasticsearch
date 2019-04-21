@@ -2,7 +2,8 @@ package com.montesinnos.friendly.elasticsearch;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.montesinnos.friendly.commons.resources.ResourceUtils;
-import com.montesinnos.friendly.elasticsearch.bulk.Bulk;
+import com.montesinnos.friendly.elasticsearch.bulk.BulkConfiguration;
+import com.montesinnos.friendly.elasticsearch.bulk.InMemoryBulk;
 import com.montesinnos.friendly.elasticsearch.client.FriendlyClient;
 import com.montesinnos.friendly.elasticsearch.connection.Connection;
 
@@ -22,8 +23,12 @@ public class Wrapper {
 
     public static Connection setup() {
         final Connection connection = getConnection();
-        final Bulk bulk = new Bulk(connection.getClient());
-        final FriendlyClient client = new FriendlyClient(connection.getClient());
+        final InMemoryBulk bulk = new InMemoryBulk(connection,
+                new BulkConfiguration.Builder()
+                        .indexName(INDEX_NAME)
+                        .typeName(TYPE_NAME)
+                        .build());
+        final FriendlyClient client = new FriendlyClient(connection);
 
         client.deleteIndex(INDEX_NAME);
         client.createIndex(INDEX_NAME, TYPE_NAME, ResourceUtils.read("setup/pokemon-mapping.json"));
@@ -31,7 +36,7 @@ public class Wrapper {
         try {
             new ObjectMapper()
                     .readTree(ResourceUtils.read("setup/pokemon.json"))
-                    .forEach(x -> bulk.insert(INDEX_NAME, TYPE_NAME, x.toString()));
+                    .forEach(line -> bulk.insert(line.toString()));
         } catch (IOException e) {
             e.printStackTrace();
         }

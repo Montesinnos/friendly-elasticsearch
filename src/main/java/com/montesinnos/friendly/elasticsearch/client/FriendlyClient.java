@@ -1,5 +1,6 @@
 package com.montesinnos.friendly.elasticsearch.client;
 
+import com.montesinnos.friendly.elasticsearch.connection.Connection;
 import com.montesinnos.friendly.elasticsearch.index.IndexConfiguration;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -22,7 +23,10 @@ import org.elasticsearch.action.admin.indices.refresh.RefreshResponse;
 import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.action.support.master.AcknowledgedResponse;
-import org.elasticsearch.client.*;
+import org.elasticsearch.client.GetAliasesResponse;
+import org.elasticsearch.client.RequestOptions;
+import org.elasticsearch.client.RestHighLevelClient;
+import org.elasticsearch.client.SyncedFlushResponse;
 import org.elasticsearch.cluster.health.ClusterHealthStatus;
 import org.elasticsearch.cluster.metadata.AliasMetaData;
 import org.elasticsearch.common.UUIDs;
@@ -43,12 +47,10 @@ import java.util.stream.Collectors;
 public class FriendlyClient {
     private static final Logger logger = LogManager.getLogger(FriendlyClient.class);
 
-    private final RestHighLevelClient client;
-    private final RestClient lowLevelClient;
+    private final Connection connection;
 
-    public FriendlyClient(final RestHighLevelClient client) {
-        this.client = client;
-        lowLevelClient = client.getLowLevelClient();
+    public FriendlyClient(final Connection connection) {
+        this.connection = connection;
     }
 
     public static String generateIDs() {
@@ -56,7 +58,7 @@ public class FriendlyClient {
     }
 
     public RestHighLevelClient getClient() {
-        return client;
+        return connection.getClient();
     }
 
     public ClusterHealthStatus waitForGreen(final int seconds) {
@@ -66,7 +68,7 @@ public class FriendlyClient {
 
         final ClusterHealthResponse response;
         try {
-            response = client.cluster().health(request, RequestOptions.DEFAULT);
+            response = getClient().cluster().health(request, RequestOptions.DEFAULT);
             return response.getStatus();
         } catch (IOException e) {
             e.printStackTrace();
@@ -84,7 +86,7 @@ public class FriendlyClient {
         searchRequest.source(searchSourceBuilder);
 
         try {
-            final SearchResponse searchResponse = client.search(searchRequest, RequestOptions.DEFAULT);
+            final SearchResponse searchResponse = getClient().search(searchRequest, RequestOptions.DEFAULT);
             return searchResponse.getHits().totalHits;
         } catch (ElasticsearchStatusException e) {
 //            e.printStackTrace();
@@ -121,7 +123,7 @@ public class FriendlyClient {
     public String createIndex(final CreateIndexRequest request) {
         final CreateIndexResponse createIndexResponse;
         try {
-            createIndexResponse = client.indices().create(request, RequestOptions.DEFAULT);
+            createIndexResponse = getClient().indices().create(request, RequestOptions.DEFAULT);
             return createIndexResponse.index();
         } catch (IOException e) {
             e.printStackTrace();
@@ -211,7 +213,7 @@ public class FriendlyClient {
         request.timeout(TimeValue.timeValueMinutes(2));
         request.indices(index);
         try {
-            final AcknowledgedResponse deleteIndexResponse = client.indices().delete(request, RequestOptions.DEFAULT);
+            final AcknowledgedResponse deleteIndexResponse = getClient().indices().delete(request, RequestOptions.DEFAULT);
             return deleteIndexResponse.isAcknowledged();
         } catch (IOException e) {
             e.printStackTrace();
@@ -229,7 +231,7 @@ public class FriendlyClient {
         final GetIndexRequest request = new GetIndexRequest();
         request.indices(index);
         try {
-            return client.indices().exists(request, RequestOptions.DEFAULT);
+            return getClient().indices().exists(request, RequestOptions.DEFAULT);
         } catch (IOException e) {
             e.printStackTrace();
             throw new RuntimeException();
@@ -252,7 +254,7 @@ public class FriendlyClient {
         request.force(true);
 
         try {
-            final FlushResponse flushResponse = client.indices().flush(request, RequestOptions.DEFAULT);
+            final FlushResponse flushResponse = getClient().indices().flush(request, RequestOptions.DEFAULT);
 
             final int totalShards = flushResponse.getTotalShards();
             final int successfulShards = flushResponse.getSuccessfulShards();
@@ -287,7 +289,7 @@ public class FriendlyClient {
                         new SyncedFlushRequest(index.trim()) :
                         new SyncedFlushRequest();
         try {
-            final SyncedFlushResponse flushSyncedResponse = client.indices().flushSynced(request, RequestOptions.DEFAULT);
+            final SyncedFlushResponse flushSyncedResponse = getClient().indices().flushSynced(request, RequestOptions.DEFAULT);
 
             final int totalShards = flushSyncedResponse.totalShards();
             final int successfulShards = flushSyncedResponse.successfulShards();
@@ -337,12 +339,15 @@ public class FriendlyClient {
                         new RefreshRequest();
 
         try {
-            final RefreshResponse refreshResponse = client.indices().refresh(request, RequestOptions.DEFAULT);
+            final RefreshResponse refreshResponse = getClient().indices().refresh(request, RequestOptions.DEFAULT);
             return refreshResponse.getTotalShards();
-        } catch (IOException e) {
+        } catch (IOException | ElasticsearchStatusException e) {
+            logger.warn("Couldn't refresh index [{}]", index);
             e.printStackTrace();
-            throw new RuntimeException();
+//            throw new RuntimeException();
+
         }
+        return 0;
     }
 
     /**
@@ -355,21 +360,14 @@ public class FriendlyClient {
     }
 
     public void close() throws RuntimeException {
-        if (client != null) {
-            try {
-                client.close();
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
-        }
+        connection.close();
     }
-
 
     public List<String> getAliases(final String index) {
         final GetAliasesRequest request = new GetAliasesRequest();
         request.indices(index);
         try {
-            final GetAliasesResponse response = client.indices().getAlias(request, RequestOptions.DEFAULT);
+            final GetAliasesResponse response = getClient().indices().getAlias(request, RequestOptions.DEFAULT);
             final Map<String, Set<AliasMetaData>> aliases = response.getAliases();
             return aliases.values().stream().flatMap(Collection::stream).map(AliasMetaData::alias).collect(Collectors.toList());
 
@@ -383,7 +381,7 @@ public class FriendlyClient {
         request.addAliasAction(aliasAction);
         try {
             final AcknowledgedResponse indicesAliasesResponse =
-                    client.indices().updateAliases(request, RequestOptions.DEFAULT);
+                    getClient().indices().updateAliases(request, RequestOptions.DEFAULT);
             return indicesAliasesResponse;
         } catch (IOException e) {
             throw new RuntimeException(e);

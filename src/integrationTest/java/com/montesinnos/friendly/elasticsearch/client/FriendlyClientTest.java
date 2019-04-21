@@ -33,7 +33,7 @@ class FriendlyClientTest {
 
     @AfterAll
     static void tearDown() {
-        final FriendlyClient client = new FriendlyClient(connection.getClient());
+        final FriendlyClient client = new FriendlyClient(connection);
         client.deleteIndex(createIndexName);
         client.deleteIndex(deleteIndexName);
     }
@@ -41,35 +41,41 @@ class FriendlyClientTest {
     @Test
     @DisplayName("Wait for green")
     void waitForGreenTest() {
-        final FriendlyClient client = new FriendlyClient(connection.getClient());
-        assertEquals(ClusterHealthStatus.GREEN, client.waitForGreen(30));
+        final FriendlyClient client = new FriendlyClient(connection);
+        final long start = System.currentTimeMillis();
+        final ClusterHealthStatus result = client.waitForGreen(30);
+        final long end = System.currentTimeMillis();
+
+        //Checks if the Cluster is green or if it actually waited that long
+        assertTrue(ClusterHealthStatus.GREEN == result
+                || (end - start) > 29000);
     }
 
     @Test
     @DisplayName("Index count")
     void countTest() {
-        final FriendlyClient client = new FriendlyClient(connection.getClient());
+        final FriendlyClient client = new FriendlyClient(connection);
         assertEquals(Wrapper.INDEX_COUNT, client.count(Wrapper.INDEX_NAME));
     }
 
     @Test
     @DisplayName("Index flush")
     void flushTest() {
-        final FriendlyClient client = new FriendlyClient(connection.getClient());
+        final FriendlyClient client = new FriendlyClient(connection);
         assertTrue(client.flush(Wrapper.INDEX_NAME) > 0);
     }
 
     @Test
     @DisplayName("Create Index")
     void createIndexTest() {
-        final FriendlyClient client = new FriendlyClient(connection.getClient());
+        final FriendlyClient client = new FriendlyClient(connection);
         client.deleteIndex(createIndexName);
         assertEquals(createIndexName, client.createIndex(createIndexName));
     }
 
     @Test
     void createIndexFromSettingsTest() throws IOException {
-        final FriendlyClient client = new FriendlyClient(connection.getClient());
+        final FriendlyClient client = new FriendlyClient(connection);
         final String settings = Resources.toString(
                 Resources.getResource("client/pokemon-settings.json"), Charsets.UTF_8);
         client.deleteIndex(createIndexFromSettingsName);
@@ -78,7 +84,7 @@ class FriendlyClientTest {
 
     @Test
     void createIndexFromConfiguratorTest() {
-        final FriendlyClient client = new FriendlyClient(connection.getClient());
+        final FriendlyClient client = new FriendlyClient(connection);
 
         final IndexConfiguration indexConfiguration = new IndexConfiguration.Builder()
                 .name(createIndexName)
@@ -97,7 +103,7 @@ class FriendlyClientTest {
     @Test
     @DisplayName("Index exists")
     void indexExistsTest() {
-        final FriendlyClient client = new FriendlyClient(connection.getClient());
+        final FriendlyClient client = new FriendlyClient(connection);
         assertFalse(client.indexExists("garbage-don-t-work"));
         assertTrue(client.indexExists(Wrapper.INDEX_NAME));
     }
@@ -105,7 +111,7 @@ class FriendlyClientTest {
     @Test
     @DisplayName("Delete index")
     void deleteIndexTest() {
-        final FriendlyClient client = new FriendlyClient(connection.getClient());
+        final FriendlyClient client = new FriendlyClient(connection);
         client.deleteIndex(deleteIndexName);
         client.createIndex(deleteIndexName);
         assertTrue(client.deleteIndex(deleteIndexName));
@@ -114,7 +120,7 @@ class FriendlyClientTest {
     @Test
     @DisplayName("Add and Remove Alias")
     void addAliasTest() {
-        final FriendlyClient client = new FriendlyClient(connection.getClient());
+        final FriendlyClient client = new FriendlyClient(connection);
         client.deleteIndex(createIndexName);
         client.createIndex(createIndexName);
         final String alias = client.addAlias(createIndexName, aliasName);
@@ -125,7 +131,7 @@ class FriendlyClientTest {
     @Test
     @DisplayName("Remove Alias")
     void removeAliasTest() {
-        final FriendlyClient client = new FriendlyClient(connection.getClient());
+        final FriendlyClient client = new FriendlyClient(connection);
         client.deleteIndex(createIndexName);
         client.createIndex(createIndexName);
         final String alias = client.addAlias(createIndexName, aliasName);
@@ -139,7 +145,7 @@ class FriendlyClientTest {
     @Test
     @DisplayName("Get Aliases")
     void getAliasesTest() {
-        final FriendlyClient client = new FriendlyClient(connection.getClient());
+        final FriendlyClient client = new FriendlyClient(connection);
         client.deleteIndex(createIndexName);
         client.createIndex(createIndexName);
         client.addAlias(createIndexName, aliasName);

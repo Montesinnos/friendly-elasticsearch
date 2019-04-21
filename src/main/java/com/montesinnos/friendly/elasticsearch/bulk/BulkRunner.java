@@ -22,6 +22,6 @@ public class BulkRunner {
             throw new RuntimeException("Provided path doesn't exist: " + path);
         }
 
-        final Bulk bulk = new Bulk(connection.getClient());
+        final ProcessorBulk processorBulk = new ProcessorBulk(connection);
     }
 }

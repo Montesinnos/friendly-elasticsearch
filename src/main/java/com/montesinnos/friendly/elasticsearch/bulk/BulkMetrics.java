@@ -9,6 +9,13 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import static com.montesinnos.friendly.commons.Pretty.pretty;
 
+/**
+ * Holds metrics of a bulk process to report to the user
+ *
+ * @author montesinnos
+ * @since 2018-07-15
+ */
+
 public class BulkMetrics {
     private static final Logger logger = LogManager.getLogger(BulkMetrics.class);
 
@@ -47,7 +54,7 @@ public class BulkMetrics {
     }
 
     /**
-     * Increments the count of records being inserted
+     * Increments the count of docs being inserted
      *
      * @return new value
      */

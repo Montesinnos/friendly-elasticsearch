@@ -11,31 +11,36 @@ import java.io.IOException;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-class BulkTest {
+class ProcessorBulkTest {
     private final Connection connection = Wrapper.getConnection();
 
     @Test
     void indexTest() throws IOException {
-        final Bulk bulk = new Bulk(connection.getClient());
-        final FriendlyClient client = new FriendlyClient(connection.getClient());
-
-        final String indexName = "test-bulk-insert";
+        final String indexName = "test-processor-bulk-insert";
         final String typeName = "pokemon";
+
+        final Bulk bulk = new ProcessorBulk(connection, new BulkConfiguration.Builder()
+                .indexName(indexName)
+                .typeName(typeName)
+                .build());
+        final FriendlyClient client = new FriendlyClient(connection);
+
         client.deleteIndex(indexName);
         client.createIndex(indexName, typeName, ResourceUtils.read("setup/pokemon-mapping.json"));
 
         new ObjectMapper()
                 .readTree(ResourceUtils.read("setup/pokemon.json"))
-                .forEach(x -> bulk.insert(indexName, typeName, x.toString()));
+                .forEach(line -> bulk.insert(line.toString()));
 
         bulk.close();
         client.flush(indexName);
         assertEquals(410L, client.count(indexName));
+        client.deleteIndex(indexName);
     }
 
     @Test
     void flushTest() {
-        final Bulk bulk = new Bulk(connection.getClient());
-        bulk.flush();
+        final ProcessorBulk processorBulk = new ProcessorBulk(connection);
+        processorBulk.flush();
     }
 }
