@@ -2,6 +2,7 @@ package com.montesinnos.friendly.elasticsearch.bulk;
 
 /**
  * Used to hold data before inserting in Elasticsearch
+ *
  * @author montesinnos
  * @since 2018-07-15
  */

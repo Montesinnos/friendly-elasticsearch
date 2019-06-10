@@ -9,7 +9,7 @@ plugins {
 }
 
 group 'com.montesinnos.friendly'
-version '0.1.14-SNAPSHOT'
+version '0.1.18-SNAPSHOT'
 
 sourceCompatibility = 1.8
 
@@ -36,14 +36,14 @@ dependencies {
     compile "com.montesinnos.friendly:commons:0.1.9-SNAPSHOT"
 
     // https://mvnrepository.com/artifact/org.elasticsearch.client/elasticsearch-rest-high-level-client
-    compile group: 'org.elasticsearch.client', name: 'elasticsearch-rest-high-level-client', version: '6.5.4'
+    compile group: 'org.elasticsearch.client', name: 'elasticsearch-rest-high-level-client', version: '6.7.0'
 
     // https://mvnrepository.com/artifact/org.junit.jupiter/junit-jupiter-api
-    testCompile group: 'org.junit.jupiter', name: 'junit-jupiter-api', version: '5.5.0-M1'
+    testCompile group: 'org.junit.jupiter', name: 'junit-jupiter-api', version: '5.5.0-RC1'
     // https://mvnrepository.com/artifact/org.junit.jupiter/junit-jupiter-engine
-    testCompile group: 'org.junit.jupiter', name: 'junit-jupiter-engine', version: '5.5.0-M1'
+    testCompile group: 'org.junit.jupiter', name: 'junit-jupiter-engine', version: '5.5.0-RC1'
     // https://mvnrepository.com/artifact/org.junit.jupiter/junit-jupiter-params
-    testCompile group: 'org.junit.jupiter', name: 'junit-jupiter-params', version: '5.5.0-M1'
+    testCompile group: 'org.junit.jupiter', name: 'junit-jupiter-params', version: '5.5.0-RC1'
 }
 
 test {

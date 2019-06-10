@@ -11,13 +11,10 @@ import org.elasticsearch.action.admin.cluster.health.ClusterHealthRequest;
 import org.elasticsearch.action.admin.cluster.health.ClusterHealthResponse;
 import org.elasticsearch.action.admin.indices.alias.IndicesAliasesRequest;
 import org.elasticsearch.action.admin.indices.alias.get.GetAliasesRequest;
-import org.elasticsearch.action.admin.indices.create.CreateIndexRequest;
-import org.elasticsearch.action.admin.indices.create.CreateIndexResponse;
 import org.elasticsearch.action.admin.indices.delete.DeleteIndexRequest;
 import org.elasticsearch.action.admin.indices.flush.FlushRequest;
 import org.elasticsearch.action.admin.indices.flush.FlushResponse;
 import org.elasticsearch.action.admin.indices.flush.SyncedFlushRequest;
-import org.elasticsearch.action.admin.indices.get.GetIndexRequest;
 import org.elasticsearch.action.admin.indices.refresh.RefreshRequest;
 import org.elasticsearch.action.admin.indices.refresh.RefreshResponse;
 import org.elasticsearch.action.search.SearchRequest;
@@ -27,6 +24,9 @@ import org.elasticsearch.client.GetAliasesResponse;
 import org.elasticsearch.client.RequestOptions;
 import org.elasticsearch.client.RestHighLevelClient;
 import org.elasticsearch.client.SyncedFlushResponse;
+import org.elasticsearch.client.indices.CreateIndexRequest;
+import org.elasticsearch.client.indices.CreateIndexResponse;
+import org.elasticsearch.client.indices.GetIndexRequest;
 import org.elasticsearch.cluster.health.ClusterHealthStatus;
 import org.elasticsearch.cluster.metadata.AliasMetaData;
 import org.elasticsearch.common.UUIDs;
@@ -171,10 +171,10 @@ public class FriendlyClient {
                 .put("index.number_of_replicas", indexConfiguration.getNumberOfReplicas())
                 .put("index.refresh_interval", indexConfiguration.getRefreshInterval());
 
-        request.timeout(TimeValue.timeValueMinutes(2));
+        request.setTimeout(TimeValue.timeValueMinutes(2));
 
         if (Strings.isNotBlank(indexConfiguration.getMapping())) {
-            request.mapping(indexConfiguration.getTypeName(),
+            request.mapping(
                     indexConfiguration.getMapping(),
                     XContentType.JSON);
         }
@@ -228,8 +228,7 @@ public class FriendlyClient {
      * @return true if index exists
      */
     public boolean indexExists(final String index) {
-        final GetIndexRequest request = new GetIndexRequest();
-        request.indices(index);
+        final GetIndexRequest request = new GetIndexRequest(index);
         try {
             return getClient().indices().exists(request, RequestOptions.DEFAULT);
         } catch (IOException e) {
@@ -341,9 +340,12 @@ public class FriendlyClient {
         try {
             final RefreshResponse refreshResponse = getClient().indices().refresh(request, RequestOptions.DEFAULT);
             return refreshResponse.getTotalShards();
-        } catch (IOException | ElasticsearchStatusException e) {
+//        } catch (IOException | ElasticsearchStatusException | ResponseException e) {
+        } catch (Exception e) {
             logger.warn("Couldn't refresh index [{}]", index);
-            e.printStackTrace();
+            logger.warn("Error [{}]", e.getClass());
+//            e.printStackTrace();
+//            e.printStackTrace();
 //            throw new RuntimeException();
 
         }

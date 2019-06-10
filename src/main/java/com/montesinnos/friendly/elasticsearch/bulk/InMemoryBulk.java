@@ -11,10 +11,7 @@ import com.montesinnos.friendly.elasticsearch.connection.Connection;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.util.Strings;
-import org.elasticsearch.action.bulk.BackoffPolicy;
-import org.elasticsearch.action.bulk.BulkProcessor;
-import org.elasticsearch.action.bulk.BulkRequest;
-import org.elasticsearch.action.bulk.BulkResponse;
+import org.elasticsearch.action.bulk.*;
 import org.elasticsearch.action.index.IndexRequest;
 import org.elasticsearch.client.RequestOptions;
 import org.elasticsearch.common.unit.ByteSizeUnit;
@@ -47,16 +44,12 @@ public class InMemoryBulk implements Bulk {
                               BulkResponse response) {
             if (response.hasFailures()) {
                 logger.warn("ProcessorBulk [{}] executed with failures", executionId);
-//
-//                BulkItemResponse[] responses = response.getItems();
-//                for (int i = 0; i < responses.length; i++) {
-//                    BulkItemResponse r = responses[i];
-//                    if (r.isFailed()) {
-//
-//                        System.out.println(request.getDescription());
-//                    }
-//                }
-
+                final BulkItemResponse[] responses = response.getItems();
+                for (final BulkItemResponse r : responses) {
+                    if (r.isFailed()) {
+                        logger.error(request.getDescription());
+                    }
+                }
                 logger.warn(response.buildFailureMessage());
             } else {
 //                logger.debug("ProcessorBulk [{}] completed in {} milliseconds", executionId, response.getTook().getMillis());
@@ -65,7 +58,10 @@ public class InMemoryBulk implements Bulk {
 
         @Override
         public void afterBulk(long executionId, BulkRequest request, Throwable failure) {
-            logger.error("Failed to execute bulk [{}]", executionId, failure);
+//            logger.error("Failed to execute bulk [{}]. Reason: {}", executionId, failure);
+            logger.error("Error executing bulk. Reason: {}", failure.getMessage());
+            logger.error(failure);
+
         }
     };
 
