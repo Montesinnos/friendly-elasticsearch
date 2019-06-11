@@ -21,12 +21,11 @@ class ProcessorBulkTest {
 
         final Bulk bulk = new ProcessorBulk(connection, new BulkConfiguration.Builder()
                 .indexName(indexName)
-                .typeName(typeName)
                 .build());
         final FriendlyClient client = new FriendlyClient(connection);
 
         client.deleteIndex(indexName);
-        client.createIndex(indexName, typeName, ResourceUtils.read("setup/pokemon-mapping.json"));
+        client.createIndex(indexName, ResourceUtils.read("setup/pokemon-mapping.json"));
 
         new ObjectMapper()
                 .readTree(ResourceUtils.read("setup/pokemon.json"))

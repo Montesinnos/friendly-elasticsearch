@@ -7,19 +7,19 @@ public interface Document {
 
     RestHighLevelClient getClient();
 
-    String insert(final String index, final String type, final String json);
+    String insert(final String index, final String json);
 
-    String insert(final String index, final String type, final String id, final Object object);
+    String insert(final String index, final String id, final Object object);
 
-    String insert(final String index, final String type, final String id, final String json);
+    String insert(final String index, final String id, final String json);
 
-    String update(final String index, final String type, final String id, final Object update);
+    String update(final String index, final String id, final Object update);
 
-    String update(final String index, final String type, final String id, final String json);
+    String update(final String index, final String id, final String json);
 
-    String updateAndGet(final String index, final String type, final String id, final Object update);
+    String updateAndGet(final String index, final String id, final Object update);
 
-    String updateAndGet(final String index, final String type, final String id, final String json);
+    String updateAndGet(final String index, final String id, final String json);
 
-    DocWriteResponse.Result delete(final String index, final String type, final String id);
+    DocWriteResponse.Result delete(final String index, final String id);
 }

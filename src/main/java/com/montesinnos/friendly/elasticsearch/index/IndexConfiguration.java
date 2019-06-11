@@ -5,7 +5,6 @@ import org.apache.logging.log4j.util.Strings;
 public class IndexConfiguration {
 
     private final String name;
-    private final String typeName;
     private final String mapping;
 
     private final String sortField;
@@ -15,10 +14,9 @@ public class IndexConfiguration {
     private final int numberOfReplicas;
     private final int refreshInterval;
 
-    public IndexConfiguration(final String name, final String typeName, final String mapping, final int numberOfShards,
+    public IndexConfiguration(final String name, final String mapping, final int numberOfShards,
                               final int numberOfReplicas, final int refreshInterval, final String sortField, final String sortOrder) {
         this.name = name;
-        this.typeName = typeName;
         this.mapping = mapping;
         this.numberOfShards = numberOfShards;
         this.numberOfReplicas = numberOfReplicas;
@@ -29,10 +27,6 @@ public class IndexConfiguration {
 
     public String getName() {
         return name;
-    }
-
-    public String getTypeName() {
-        return typeName;
     }
 
     public String getMapping() {
@@ -62,9 +56,7 @@ public class IndexConfiguration {
     public static class Builder {
 
         private String name;
-        private String typeName;
         private String mapping;
-
 
         private String sortField;
         private String sortOrder;
@@ -75,11 +67,6 @@ public class IndexConfiguration {
 
         public Builder name(final String name) {
             this.name = name;
-            return this;
-        }
-
-        public Builder typeName(final String typeName) {
-            this.typeName = typeName;
             return this;
         }
 
@@ -128,7 +115,7 @@ public class IndexConfiguration {
             if (Strings.isNotBlank(sortField) && Strings.isBlank(sortOrder)) {
                 sortOrder = "asc";
             }
-            return new IndexConfiguration(name, typeName, mapping, numberOfShards, numberOfReplicas, refreshInterval, sortField, sortOrder);
+            return new IndexConfiguration(name, mapping, numberOfShards, numberOfReplicas, refreshInterval, sortField, sortOrder);
         }
     }
 }

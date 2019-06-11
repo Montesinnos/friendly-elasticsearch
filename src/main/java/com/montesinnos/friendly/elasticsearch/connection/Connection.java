@@ -29,6 +29,7 @@ import java.util.concurrent.TimeUnit;
 public class Connection {
     private static final Logger logger = LogManager.getLogger(Connection.class);
     private RestHighLevelClient client;
+    private boolean isOpen = false;
     private final RestClientBuilder restClientBuilder;
 
     public Connection() {
@@ -74,6 +75,7 @@ public class Connection {
      */
     public Connection refresh() {
         connect();
+        isOpen = true;
         return this;
     }
 
@@ -89,7 +91,9 @@ public class Connection {
     private void close(final RestHighLevelClient client) {
         if (client != null) {
             try {
+                isOpen = false;
                 client.close();
+
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -101,6 +105,9 @@ public class Connection {
     }
 
     public RestHighLevelClient getClient() {
+        if (!isOpen) {
+            connect();
+        }
         return client;
     }
 }

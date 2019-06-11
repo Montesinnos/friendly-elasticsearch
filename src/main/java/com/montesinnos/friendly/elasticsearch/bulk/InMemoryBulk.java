@@ -28,6 +28,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 public class InMemoryBulk implements Bulk {
     private static final Logger logger = LogManager.getLogger(InMemoryBulk.class);
+    private static final String TYPE_NAME = "_doc"; //This should be deleted when moving to 7.0
     private final Connection connection;
     private final BulkMetrics bulkMetrics;
     private final BulkConfiguration bulkConfiguration;
@@ -205,11 +206,11 @@ public class InMemoryBulk implements Bulk {
             {
                 if (Strings.isBlank(doc.getId())) {
                     bulkProcessor.add(
-                            new IndexRequest(bulkConfiguration.getIndexName(), bulkConfiguration.getTypeName()).
+                            new IndexRequest(bulkConfiguration.getIndexName(), TYPE_NAME).
                                     source(doc.getDoc(), XContentType.JSON));
                 } else {
                     bulkProcessor.add(
-                            new IndexRequest(bulkConfiguration.getIndexName(), bulkConfiguration.getTypeName(), doc.getId()).
+                            new IndexRequest(bulkConfiguration.getIndexName(), TYPE_NAME, doc.getId()).
                                     source(doc.getDoc(), XContentType.JSON));
 
                 }

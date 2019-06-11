@@ -14,7 +14,6 @@ public class Wrapper {
     private static final int port = 59200;
     private static final String protocol = "http";
     public static String INDEX_NAME = "test-pokemons";
-    public static String TYPE_NAME = "pokemon";
     public static long INDEX_COUNT = 410L;
 
     public static Connection getConnection() {
@@ -26,12 +25,11 @@ public class Wrapper {
         final InMemoryBulk bulk = new InMemoryBulk(connection,
                 new BulkConfiguration.Builder()
                         .indexName(INDEX_NAME)
-                        .typeName(TYPE_NAME)
                         .build());
         final FriendlyClient client = new FriendlyClient(connection);
 
         client.deleteIndex(INDEX_NAME);
-        client.createIndex(INDEX_NAME, TYPE_NAME, ResourceUtils.read("setup/pokemon-mapping.json"));
+        client.createIndex(INDEX_NAME, ResourceUtils.read("setup/pokemon-mapping.json"));
 
         try {
             new ObjectMapper()

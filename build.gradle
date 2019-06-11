@@ -9,7 +9,7 @@ plugins {
 }
 
 group 'com.montesinnos.friendly'
-version '0.1.18-SNAPSHOT'
+version '0.1.20-SNAPSHOT'
 
 sourceCompatibility = 1.8
 
@@ -37,6 +37,11 @@ dependencies {
 
     // https://mvnrepository.com/artifact/org.elasticsearch.client/elasticsearch-rest-high-level-client
     compile group: 'org.elasticsearch.client', name: 'elasticsearch-rest-high-level-client', version: '6.7.0'
+
+    // https://mvnrepository.com/artifact/org.apache.logging.log4j/log4j-api
+    compile group: 'org.apache.logging.log4j', name: 'log4j-api', version: '2.11.2'
+    // https://mvnrepository.com/artifact/org.apache.logging.log4j/log4j-core
+    compile group: 'org.apache.logging.log4j', name: 'log4j-core', version: '2.11.2'
 
     // https://mvnrepository.com/artifact/org.junit.jupiter/junit-jupiter-api
     testCompile group: 'org.junit.jupiter', name: 'junit-jupiter-api', version: '5.5.0-RC1'

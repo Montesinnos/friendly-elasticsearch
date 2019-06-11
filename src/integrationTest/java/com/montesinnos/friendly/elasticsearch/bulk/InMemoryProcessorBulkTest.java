@@ -16,19 +16,16 @@ class InMemoryProcessorBulkTest {
 
     @Test
     void indexTest() throws IOException {
-
         final String indexName = "test-memory-bulk-insert";
-        final String typeName = "pokemon";
 
         final InMemoryBulk bulk = new InMemoryBulk(connection,
                 new BulkConfiguration.Builder()
                         .indexName(indexName)
-                        .typeName(typeName)
                         .build());
         final FriendlyClient client = new FriendlyClient(connection);
 
         client.deleteIndex(indexName);
-        client.createIndex(indexName, typeName, ResourceUtils.read("setup/pokemon-mapping.json"));
+        client.createIndex(indexName, ResourceUtils.read("setup/pokemon-mapping.json"));
 
         new ObjectMapper()
                 .readTree(ResourceUtils.read("setup/pokemon.json"))

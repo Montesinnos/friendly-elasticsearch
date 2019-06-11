@@ -17,13 +17,13 @@ import org.elasticsearch.action.admin.indices.flush.FlushResponse;
 import org.elasticsearch.action.admin.indices.flush.SyncedFlushRequest;
 import org.elasticsearch.action.admin.indices.refresh.RefreshRequest;
 import org.elasticsearch.action.admin.indices.refresh.RefreshResponse;
-import org.elasticsearch.action.search.SearchRequest;
-import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.action.support.master.AcknowledgedResponse;
 import org.elasticsearch.client.GetAliasesResponse;
 import org.elasticsearch.client.RequestOptions;
 import org.elasticsearch.client.RestHighLevelClient;
 import org.elasticsearch.client.SyncedFlushResponse;
+import org.elasticsearch.client.core.CountRequest;
+import org.elasticsearch.client.core.CountResponse;
 import org.elasticsearch.client.indices.CreateIndexRequest;
 import org.elasticsearch.client.indices.CreateIndexResponse;
 import org.elasticsearch.client.indices.GetIndexRequest;
@@ -33,9 +33,7 @@ import org.elasticsearch.common.UUIDs;
 import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.common.unit.TimeValue;
 import org.elasticsearch.common.xcontent.XContentType;
-import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.rest.RestStatus;
-import org.elasticsearch.search.builder.SearchSourceBuilder;
 
 import java.io.IOException;
 import java.util.Collection;
@@ -78,24 +76,25 @@ public class FriendlyClient {
     }
 
     public long count(final String index) {
-        final SearchRequest searchRequest = new SearchRequest(index);
-        final SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
-        searchSourceBuilder.query(QueryBuilders.matchAllQuery());
-        searchSourceBuilder.size(0);
-        searchSourceBuilder.fetchSource(false);
-        searchRequest.source(searchSourceBuilder);
-
+        final CountRequest countRequest = new CountRequest(index);
         try {
-            final SearchResponse searchResponse = getClient().search(searchRequest, RequestOptions.DEFAULT);
-            return searchResponse.getHits().totalHits;
+            final CountResponse countResponse = getClient()
+                    .count(countRequest, RequestOptions.DEFAULT);
+
+            final long count = countResponse.getCount();
+//            RestStatus status = countResponse.status();
+//            Boolean terminatedEarly = countResponse.isTerminatedEarly();
+
+            return count;
         } catch (ElasticsearchStatusException e) {
 //            e.printStackTrace();
+        } catch (IllegalStateException e) {
+            logger.error("Couldn't count [{}]. Message: {}", index, e.getMessage());
+            e.printStackTrace();
         } catch (IOException e) {
-//            e.printStackTrace();
+            e.printStackTrace();
         }
 
-//        TODO wait until they release this
-//        CountRequest countRequest = new CountRequest("index");
         return 0L;
     }
 
@@ -150,15 +149,13 @@ public class FriendlyClient {
      * It's a no-op if the index already exists
      *
      * @param index   name for the index
-     * @param type    name for the type
      * @param mapping Json string containing the mapping definition
      * @return name of the index created
      */
-    public String createIndex(final String index, final String type, final String mapping) {
+    public String createIndex(final String index, final String mapping) {
 
         final IndexConfiguration indexConfiguration = new IndexConfiguration.Builder()
                 .name(index)
-                .typeName(type)
                 .mapping(mapping).build();
 
         return createIndex(indexConfiguration);
@@ -193,16 +190,15 @@ public class FriendlyClient {
      * Creates an index using the name provided, generating a type with the mapping
      *
      * @param index   name for the index
-     * @param type    name for the type
      * @param mapping Json string containing the mapping definition
      * @param force   forces the creation of the index, by deleting any existing index of the same name
      * @return name of the name created
      */
-    public String createIndex(final String index, final String type, final String mapping, final boolean force) {
+    public String createIndex(final String index, final String mapping, final boolean force) {
         if (force) {
             deleteIndex(index);
         }
-        return createIndex(index, type, mapping);
+        return createIndex(index, mapping);
     }
 
     public boolean deleteIndex(final String index) {
@@ -265,6 +261,8 @@ public class FriendlyClient {
             if (exception.status() == RestStatus.NOT_FOUND) {
                 logger.warn("[{}] index not found to be flushed", index);
             }
+        } catch (IllegalStateException exception) {
+            logger.warn("[{}] Illegal State!. Message: {}", index, exception.getMessage());
         } catch (IOException e) {
             e.printStackTrace();
 //            throw new RuntimeException();

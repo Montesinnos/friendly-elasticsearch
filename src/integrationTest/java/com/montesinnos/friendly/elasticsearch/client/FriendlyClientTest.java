@@ -88,7 +88,6 @@ class FriendlyClientTest {
 
         final IndexConfiguration indexConfiguration = new IndexConfiguration.Builder()
                 .name(createIndexName)
-                .typeName("pokemon")
                 .mapping(ResourceUtils.read("setup/pokemon-mapping.json"))
                 .sortField("animationTime")
                 .sortOrder("desc")

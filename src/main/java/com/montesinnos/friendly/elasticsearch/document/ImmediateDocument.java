@@ -15,6 +15,7 @@ public class ImmediateDocument implements Document {
     private final RestHighLevelClient client;
     private final DocumentClient documentClient;
     private final ObjectMapper objectMapper = new ObjectMapper().setSerializationInclusion(JsonInclude.Include.NON_NULL);
+    private final static String TYPE_NAME = "_doc"; //Delete this when we go to 7.0
 
     public ImmediateDocument(final RestHighLevelClient client) {
         this.client = client;
@@ -25,27 +26,27 @@ public class ImmediateDocument implements Document {
         return client;
     }
 
-    public String insert(final String index, final String type, final String json) {
+    public String insert(final String index, final String json) {
         final IndexRequest request = new IndexRequest(
                 index,
-                type);
+                TYPE_NAME);
         request.source(json, XContentType.JSON);
         request.setRefreshPolicy(WriteRequest.RefreshPolicy.IMMEDIATE);
         return documentClient.insert(request);
     }
 
-    public String insert(final String index, final String type, final String id, final Object object) {
+    public String insert(final String index, final String id, final Object object) {
         try {
-            return insert(index, type, id, objectMapper.writeValueAsString(object));
+            return insert(index, id, objectMapper.writeValueAsString(object));
         } catch (JsonProcessingException e) {
             throw new RuntimeException(e);
         }
     }
 
-    public String insert(final String index, final String type, final String id, final String object) {
+    public String insert(final String index, final String id, final String object) {
         final IndexRequest request = new IndexRequest(
                 index,
-                type,
+                TYPE_NAME,
                 id);
         request.source(object, XContentType.JSON);
         request.setRefreshPolicy(WriteRequest.RefreshPolicy.IMMEDIATE);
@@ -53,43 +54,43 @@ public class ImmediateDocument implements Document {
     }
 
 
-    public String update(final String index, final String type, final String id, final Object object) {
+    public String update(final String index, final String id, final Object object) {
         try {
-            return update(index, type, id, objectMapper.writeValueAsString(object));
+            return update(index, id, objectMapper.writeValueAsString(object));
         } catch (JsonProcessingException e) {
             e.printStackTrace();
             throw new RuntimeException(e);
         }
     }
 
-    public String update(final String index, final String type, final String id, final String json) {
-        final UpdateRequest request = new UpdateRequest(index, type, id);
+    public String update(final String index, final String id, final String json) {
+        final UpdateRequest request = new UpdateRequest(index, TYPE_NAME, id);
         request.doc(json, XContentType.JSON);
         request.setRefreshPolicy(WriteRequest.RefreshPolicy.IMMEDIATE);
         return documentClient.update(request);
     }
 
-    public String updateAndGet(final String index, final String type, final String id, final Object object) {
+    public String updateAndGet(final String index, final String id, final Object object) {
         try {
-            return update(index, type, id, objectMapper.writeValueAsString(object));
+            return update(index, id, objectMapper.writeValueAsString(object));
         } catch (JsonProcessingException e) {
             e.printStackTrace();
             throw new RuntimeException(e);
         }
     }
 
-    public String updateAndGet(final String index, final String type, final String id, final String json) {
-        final UpdateRequest request = new UpdateRequest(index, type, id);
+    public String updateAndGet(final String index, final String id, final String json) {
+        final UpdateRequest request = new UpdateRequest(index, TYPE_NAME, id);
         request.doc(json, XContentType.JSON);
         request.setRefreshPolicy(WriteRequest.RefreshPolicy.IMMEDIATE);
         return documentClient.updateAndGet(request);
     }
 
 
-    public DocWriteResponse.Result delete(final String index, final String type, final String id) {
+    public DocWriteResponse.Result delete(final String index, final String id) {
         final DeleteRequest request = new DeleteRequest(
                 index,
-                type,
+                TYPE_NAME,
                 id);
         request.setRefreshPolicy(WriteRequest.RefreshPolicy.IMMEDIATE);
 

@@ -26,6 +26,7 @@ import java.util.concurrent.TimeUnit;
 
 public class ProcessorBulk implements Bulk {
     private static final Logger logger = LogManager.getLogger(ProcessorBulk.class);
+    private static final String TYPE_NAME = "_doc"; //This should be deleted when moving to 7.0
     private final Connection connection;
     private final BulkConfiguration bulkConfiguration;
     private final BulkProcessor bulkProcessor;
@@ -103,7 +104,7 @@ public class ProcessorBulk implements Bulk {
     @Override
     public void insert(final String id, final String record) {
         bulkProcessor.add(
-                new IndexRequest(bulkConfiguration.getIndexName(), bulkConfiguration.getTypeName(), id).
+                new IndexRequest(bulkConfiguration.getIndexName(), TYPE_NAME, id).
                         source(record, XContentType.JSON));
         inc();
     }
@@ -116,7 +117,7 @@ public class ProcessorBulk implements Bulk {
     @Override
     public void insert(final String record) {
         bulkProcessor.add(
-                new IndexRequest(bulkConfiguration.getIndexName(), bulkConfiguration.getTypeName()).
+                new IndexRequest(bulkConfiguration.getIndexName(), TYPE_NAME).
                         source(record, XContentType.JSON));
         inc();
     }
@@ -133,7 +134,7 @@ public class ProcessorBulk implements Bulk {
         records.forEach(record -> {
             try {
                 bulkProcessor.add(
-                        new IndexRequest(bulkConfiguration.getIndexName(), bulkConfiguration.getTypeName()).
+                        new IndexRequest(bulkConfiguration.getIndexName(), TYPE_NAME).
                                 source(objectMapper.writeValueAsString(record), XContentType.JSON));
                 inc();
             } catch (JsonProcessingException e) {
@@ -157,7 +158,7 @@ public class ProcessorBulk implements Bulk {
                 final String json = objectMapper.writeValueAsString(record);
                 final String id = objectMapper.readTree(json).get(idField).asText();
                 bulkProcessor.add(
-                        new IndexRequest(bulkConfiguration.getIndexName(), bulkConfiguration.getTypeName(), id).
+                        new IndexRequest(bulkConfiguration.getIndexName(), TYPE_NAME, id).
                                 source(json, XContentType.JSON));
                 inc();
             } catch (JsonProcessingException e) {

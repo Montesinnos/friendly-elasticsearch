@@ -1,5 +1,4 @@
 {
-  "pokemon": {
     "properties": {
       "animationTime": {
         "type": "float"
@@ -370,5 +369,4 @@
         "type": "float"
       }
     }
-  }
 }

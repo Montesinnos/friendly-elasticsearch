@@ -12,7 +12,6 @@ import org.apache.logging.log4j.util.Strings;
 public class BulkConfiguration {
 
     private final String indexName;
-    private final String typeName;
     private final int bulkActions;
     private final int bulkSize;
     private final int flushInterval;
@@ -23,17 +22,15 @@ public class BulkConfiguration {
      * Settings for the bulk populator
      *
      * @param indexName          Index to be used
-     * @param typeName           Type name for the docs
      * @param bulkActions        Docs to be committed
      * @param bulkSize           Size of the bulk in MB to trigger commit
      * @param flushInterval      Time in seconds to trigger commit
      * @param concurrentRequests Threads doing the insert
      * @param reportSize         Interval in docs for the logger
      */
-    public BulkConfiguration(final String indexName, final String typeName,
+    public BulkConfiguration(final String indexName,
                              int bulkActions, int bulkSize, int flushInterval, final int concurrentRequests, final int reportSize) {
         this.indexName = indexName;
-        this.typeName = typeName;
         this.bulkActions = bulkActions;
         this.bulkSize = bulkSize;
         this.flushInterval = flushInterval;
@@ -66,27 +63,16 @@ public class BulkConfiguration {
         return indexName;
     }
 
-    public String getTypeName() {
-        return typeName;
-    }
-
     public static class Builder {
         private String indexName;
-        private String typeName;
         private int bulkActions;
         private int bulkSize;
         private int flushInterval;
         private int concurrentRequests;
         private int reportSize;
 
-
         public Builder indexName(final String indexName) {
             this.indexName = indexName;
-            return this;
-        }
-
-        public Builder typeName(final String typeName) {
-            this.typeName = typeName;
             return this;
         }
 
@@ -120,9 +106,6 @@ public class BulkConfiguration {
             if (Strings.isBlank(indexName)) {
                 indexName = DateUtils.getTimestamp();
             }
-            if (Strings.isBlank(typeName)) {
-                typeName = "doc";
-            }
             if (bulkActions > 0 && bulkActions < 1_000_000) {
             } else {
                 this.bulkActions = 2000;
@@ -143,7 +126,7 @@ public class BulkConfiguration {
             } else {
                 this.reportSize = 10_000;
             }
-            return new BulkConfiguration(indexName, typeName,
+            return new BulkConfiguration(indexName,
                     bulkActions, bulkSize, flushInterval, concurrentRequests, reportSize);
         }
     }
