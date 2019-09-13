@@ -341,7 +341,7 @@ public class FriendlyClient {
 //        } catch (IOException | ElasticsearchStatusException | ResponseException e) {
         } catch (Exception e) {
             logger.warn("Couldn't refresh index [{}]", index);
-            logger.warn("Error [{}]", e.getClass());
+            logger.warn("Error [{}]", e.getMessage());
 //            e.printStackTrace();
 //            e.printStackTrace();
 //            throw new RuntimeException();

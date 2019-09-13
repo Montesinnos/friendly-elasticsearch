@@ -153,7 +153,7 @@ public class Search {
             // failures should be handled here
         }
         final SearchHits hits = searchResponse.getHits();
-        final long totalHits = hits.getTotalHits();
+        final long totalHits = hits.getTotalHits().value;
         final float maxScore = hits.getMaxScore();
 
         final Metadata metadata = new Metadata(totalHits, maxScore);

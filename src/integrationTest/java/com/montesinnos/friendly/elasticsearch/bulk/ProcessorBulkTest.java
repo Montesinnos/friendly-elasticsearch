@@ -32,6 +32,7 @@ class ProcessorBulkTest {
                 .forEach(line -> bulk.insert(line.toString()));
 
         bulk.close();
+        client.refresh(indexName);
         client.flush(indexName);
         assertEquals(410L, client.count(indexName));
         client.deleteIndex(indexName);

@@ -14,7 +14,6 @@ public class RegularDocument implements Document {
     private final RestHighLevelClient client;
     private final DocumentClient documentClient;
     private final ObjectMapper objectMapper = new ObjectMapper().setSerializationInclusion(JsonInclude.Include.NON_NULL);
-    private final static String TYPE_NAME = "_doc"; //Delete this when we go to 7.0
 
     public RegularDocument(final RestHighLevelClient client) {
         this.client = client;
@@ -27,8 +26,7 @@ public class RegularDocument implements Document {
 
     public String insert(final String index, final String json) {
         final IndexRequest request = new IndexRequest(
-                index,
-                TYPE_NAME);
+                index);
         request.source(json, XContentType.JSON);
         return documentClient.insert(request);
     }
@@ -42,10 +40,8 @@ public class RegularDocument implements Document {
     }
 
     public String insert(final String index, final String id, final String object) {
-        final IndexRequest request = new IndexRequest(
-                index,
-                TYPE_NAME,
-                id);
+        final IndexRequest request = new IndexRequest(index)
+                .id(id);
         request.source(object, XContentType.JSON);
         return documentClient.insert(request);
     }
@@ -60,7 +56,7 @@ public class RegularDocument implements Document {
     }
 
     public String update(final String index, final String id, final String json) {
-        final UpdateRequest updateRequest = new UpdateRequest(index, TYPE_NAME, id);
+        final UpdateRequest updateRequest = new UpdateRequest(index, id);
         updateRequest.doc(json, XContentType.JSON);
         return documentClient.update(updateRequest);
     }
@@ -75,7 +71,7 @@ public class RegularDocument implements Document {
     }
 
     public String updateAndGet(final String index, final String id, final String json) {
-        final UpdateRequest updateRequest = new UpdateRequest(index, TYPE_NAME, id);
+        final UpdateRequest updateRequest = new UpdateRequest(index, id);
         updateRequest.doc(json, XContentType.JSON);
         return documentClient.updateAndGet(updateRequest);
     }
@@ -83,7 +79,6 @@ public class RegularDocument implements Document {
     public DocWriteResponse.Result delete(final String index, final String id) {
         final DeleteRequest deleteRequest = new DeleteRequest(
                 index,
-                TYPE_NAME,
                 id);
 
         return documentClient.delete(deleteRequest);

@@ -44,14 +44,14 @@ public class InMemoryBulk implements Bulk {
         public void afterBulk(long executionId, BulkRequest request,
                               BulkResponse response) {
             if (response.hasFailures()) {
-                logger.warn("ProcessorBulk [{}] executed with failures", executionId);
+                logger.error("ProcessorBulk [{}] executed with failures", executionId);
                 final BulkItemResponse[] responses = response.getItems();
                 for (final BulkItemResponse r : responses) {
                     if (r.isFailed()) {
                         logger.error(request.getDescription());
                     }
                 }
-                logger.warn(response.buildFailureMessage());
+                logger.error(response.buildFailureMessage());
             } else {
 //                logger.debug("ProcessorBulk [{}] completed in {} milliseconds", executionId, response.getTook().getMillis());
             }
@@ -62,7 +62,6 @@ public class InMemoryBulk implements Bulk {
 //            logger.error("Failed to execute bulk [{}]. Reason: {}", executionId, failure);
             logger.error("Error executing bulk. Reason: {}", failure.getMessage());
             logger.error(failure);
-
         }
     };
 
@@ -206,12 +205,13 @@ public class InMemoryBulk implements Bulk {
             {
                 if (Strings.isBlank(doc.getId())) {
                     bulkProcessor.add(
-                            new IndexRequest(bulkConfiguration.getIndexName(), TYPE_NAME).
+                            new IndexRequest(bulkConfiguration.getIndexName()).
                                     source(doc.getDoc(), XContentType.JSON));
                 } else {
                     bulkProcessor.add(
-                            new IndexRequest(bulkConfiguration.getIndexName(), TYPE_NAME, doc.getId()).
-                                    source(doc.getDoc(), XContentType.JSON));
+                            new IndexRequest(bulkConfiguration.getIndexName())
+                                    .id(doc.getId())
+                                    .source(doc.getDoc(), XContentType.JSON));
 
                 }
             });

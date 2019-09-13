@@ -8,7 +8,9 @@ services:
     - cluster.name=next
     - bootstrap.memory_lock=true
     - "ES_JAVA_OPTS=-Xms1g -Xmx1g"
-    - "discovery.zen.ping.unicast.hosts=elasticsearchtest,elasticsearch2test"
+    - "discovery.seed_hosts=elasticsearchtest,elasticsearch2test"
+    - "cluster.initial_master_nodes=elasticsearchtest,elasticsearch2test"
+    - "node.name=elasticsearchtest"
     ulimits:
       memlock:
         soft: -1
@@ -25,7 +27,9 @@ services:
     - cluster.name=next
     - bootstrap.memory_lock=true
     - "ES_JAVA_OPTS=-Xms1g -Xmx1g"
-    - "discovery.zen.ping.unicast.hosts=elasticsearchtest,elasticsearch2test"
+    - "discovery.seed_hosts=elasticsearchtest,elasticsearch2test"
+    - "cluster.initial_master_nodes=elasticsearchtest,elasticsearch2test"
+    - "node.name=elasticsearch2test"
     ulimits:
       memlock:
         soft: -1
